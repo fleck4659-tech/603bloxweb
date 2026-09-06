@@ -7465,29 +7465,78 @@ img.azora-cemoji {
     border-radius: 8px;
     cursor: pointer;
 }
+.azora-wire-wrap {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
 .azora-wire-stage {
     position: relative;
     flex: 1;
     overflow: auto;
     min-height: 0;
+    min-width: 900px;
+    background:
+        linear-gradient(rgba(56,189,248,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56,189,248,0.06) 1px, transparent 1px);
+    background-size: 28px 28px;
 }
+.azora-wire-grid { display: none; }
 .azora-wire-svg {
     position: absolute;
     inset: 0;
     width: 100%;
-    height: 100%;
+    height: 140%;
+    min-height: 900px;
     pointer-events: none;
 }
+.azora-wire-line {
+    stroke-dasharray: 10 8;
+    animation: azoraWireDash 1.2s linear infinite;
+    filter: drop-shadow(0 0 4px currentColor);
+}
+@keyframes azoraWireDash { to { stroke-dashoffset: -36; } }
 .azora-wire-node {
     position: absolute;
-    width: 200px;
-    padding: 10px;
+    width: 188px;
+    padding: 8px 9px;
     background: rgba(15, 23, 42, 0.94);
     border: 1px solid #38bdf8;
     border-radius: 10px;
     box-shadow: 0 0 16px rgba(56,189,248,0.2);
+    z-index: 2;
 }
-.azora-wire-node h4 { margin: 0 0 6px; color: #f8fafc; font-size: 14px; }
-.azora-wire-node p { margin: 0 0 4px; font-size: 11px; line-height: 1.35; color: #cbd5e1; }
+.azora-wire-node i {
+    display: block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #34d399;
+    margin-bottom: 4px;
+    box-shadow: 0 0 8px #34d399;
+}
+.azora-wire-node.pulse {
+    border-color: #fde68a;
+    box-shadow: 0 0 22px rgba(253,230,138,0.45);
+    transform: scale(1.03);
+}
+.azora-wire-node h4 { margin: 0 0 4px; color: #f8fafc; font-size: 13px; }
+.azora-wire-node p { margin: 0 0 3px; font-size: 10px; line-height: 1.3; color: #cbd5e1; }
 .wire-go { color: #7dd3fc !important; }
 .wire-does { color: #c4b5fd !important; }
+.azora-wire-log {
+    width: 260px;
+    flex-shrink: 0;
+    background: #020617;
+    border-left: 1px solid #334155;
+    padding: 10px;
+    overflow: auto;
+    font-size: 11px;
+    color: #93c5fd;
+}
+.azora-wire-log h3 { margin: 0 0 8px; color: #f8fafc; font-size: 12px; }
+.azora-wire-log div { padding: 4px 0; border-bottom: 1px solid #1e293b; }
+@media (max-width: 800px) {
+    .azora-wire-wrap { flex-direction: column; }
+    .azora-wire-log { width: auto; height: 120px; border-left: 0; border-top: 1px solid #334155; }
+    .azora-wire-stage { min-width: 700px; }
+}

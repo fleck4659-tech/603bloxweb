@@ -28844,57 +28844,158 @@ function azoraEggPlayClick(ev) {
     }
 }
 
+var _azoraWireTimer = null;
+var _azoraWirePackets = [];
+
 function openAzoraWireMap() {
     var ov = document.getElementById("azoraWireOverlay");
     var stage = document.getElementById("azoraWireStage");
+    var log = document.getElementById("azoraWireLog");
     if (!ov || !stage) return;
     var nodes = [
-        { id: "avatar", x: 8, y: 18, title: "Character", go: "avatar3d-canvas → your look, colors, clothes", does: "Shows the player you take into games." },
-        { id: "online", x: 36, y: 8, title: "Play Azora Online", go: "azoraPlayModeBadge → connection check", does: "Tells the site if you are online or offline." },
-        { id: "chat", x: 64, y: 18, title: "Chat", go: "chatOverlay → friends list + bubbles", does: "Sends messages to friends. Type : for emojis." },
-        { id: "aturius", x: 8, y: 48, title: "Aturius", go: "aturius panel + phone call overlay", does: "Reads your words and answers as the helper robot." },
-        { id: "feed", x: 36, y: 42, title: "Feed", go: "azoraAzaFnGames → public cards", does: "Lists playable posts. Play opens the game or report." },
-        { id: "studio", x: 64, y: 48, title: "Creator Studio", go: "creator.html → azoraPublishedNormGames", does: "Saves parts, then Publish writes a Norm Game." },
-        { id: "norm", x: 20, y: 74, title: "Norm Games", go: "normGameOverlay + live room path", does: "Loads the 3D world and other real players." },
-        { id: "coins", x: 52, y: 74, title: "AzoraCoins", go: "local wallet + shop + ads", does: "Pays for shop items, ads, and some extras." },
-        { id: "settings", x: 80, y: 74, title: "Settings", go: "theme + account + updates", does: "Stores your theme and login choices on this device." }
+        { id: "boot", x: 2, y: 4, title: "Boot / Cache", go: "sw-azora.js → azora-app cache", does: "Loads files, then checks for a newer version." },
+        { id: "account", x: 22, y: 3, title: "Account Gate", go: "azoraAccount / guest save", does: "Knows who you are before the home board opens." },
+        { id: "theme", x: 42, y: 3, title: "Theme Engine", go: "data-theme + CSS variables", does: "Paints blues, purples, and popup colors." },
+        { id: "online", x: 62, y: 3, title: "Play Azora Online", go: "internet check + badge", does: "Flips Online / Offline and blocks play if down." },
+        { id: "avatar", x: 2, y: 22, title: "Character Rig", go: "avatar3d-canvas + THREE mesh", does: "Head, torso, clothes, and colors live here." },
+        { id: "closet", x: 22, y: 22, title: "Closet / Shop", go: "inventory + marketplace", does: "Items you own get applied onto the mesh." },
+        { id: "coins", x: 42, y: 22, title: "AzoraCoins", go: "wallet in localStorage", does: "Pays shop, ads, and some extras." },
+        { id: "ads", x: 62, y: 22, title: "Ads Board", go: "home ads + create-ad flow", does: "Text / picture / spotlight cards on the lobby." },
+        { id: "chat", x: 82, y: 12, title: "Friend Chat", go: "chatOverlay + archives", does: "Stores friend lines. :codes: become Unicode." },
+        { id: "aturius", x: 82, y: 30, title: "Aturius Core", go: "AI chats + training pack", does: "Reads text, answers, can open a voice-call stage." },
+        { id: "phone", x: 82, y: 48, title: "Phone Call UI", go: "aturiusCallOverlay + STT", does: "Turns speech into words Aturius can read." },
+        { id: "feed", x: 2, y: 42, title: "Live Feed", go: "azoraAzaFnGames list", does: "Public cards. Play starts a 2D/3D toy or a report." },
+        { id: "videos", x: 22, y: 42, title: "Videos Lane", go: "azoraVideosOverlay + review queue", does: "Uploads sit in a separate moderated category." },
+        { id: "unknown", x: 42, y: 42, title: "Unknown Fallback", go: "unknown-error layout on Feed", does: "If studio publish really fails, posts the word-game." },
+        { id: "studio", x: 62, y: 42, title: "Creator Studio", go: "creator.html parts + baseplate", does: "Builds blocks, then Publish writes Norm Games." },
+        { id: "norm", x: 2, y: 62, title: "Norm Games", go: "normGameOverlay + room path", does: "3D world, jump, chat, other real players." },
+        { id: "cvb", x: 22, y: 62, title: "CVB Voice Box", go: "grey box on the neck + speak", does: "Reads allowed chat out loud from the player." },
+        { id: "presence", x: 42, y: 62, title: "Live Presence", go: "Firebase room players", does: "Moves other people you can actually see." },
+        { id: "lands", x: 62, y: 62, title: "Living Lands", go: "living-lands.js + map pixels", does: "Paint countries, banks, armies, alliances." },
+        { id: "servers", x: 82, y: 66, title: "Servers Page", go: "servers.html player list", does: "Shows real accounts. Error stays hidden." },
+        { id: "settings", x: 2, y: 82, title: "Settings Hub", go: "theme grid + security + alts", does: "Saves look, password, and device options." },
+        { id: "mod", x: 22, y: 82, title: "Moderation", go: "auto filter + owner console", does: "Blocks unsafe chat before it posts." },
+        { id: "notif", x: 42, y: 82, title: "Notifications", go: "bell + notif overlay", does: "Friend online, gifts, and system notes." },
+        { id: "update", x: 62, y: 82, title: "App Updates", go: "checkForAzoraUpdates", does: "Closes and reopens when a newer build is ready." }
     ];
     var wires = [
-        ["avatar","online","Look is ready → go play"],
-        ["avatar","norm","Character mesh copied into the world"],
-        ["online","feed","Online flag lets Feed load"],
-        ["online","norm","Online flag lets rooms sync"],
-        ["chat","aturius","Same words engine / emoji codes"],
-        ["feed","studio","Failed studio publish can post a report here"],
-        ["studio","norm","Publish target: Games → Norm Games"],
-        ["norm","chat","In-world chat line"],
-        ["coins","settings","Wallet shown in the top bar"],
-        ["aturius","norm","Aturius can join and follow in a game"]
+        ["boot","account","boot hands identity"],
+        ["boot","theme","cache then paint"],
+        ["boot","online","after files, ping net"],
+        ["account","avatar","login loads last look"],
+        ["account","coins","wallet bound to user"],
+        ["account","servers","name appears on list"],
+        ["account","settings","profile + alts"],
+        ["theme","settings","theme chips write CSS"],
+        ["online","feed","online unlocks Feed fetch"],
+        ["online","norm","online unlocks rooms"],
+        ["online","presence","net needed for sync"],
+        ["online","update","online can check builds"],
+        ["avatar","closet","wear item → mesh"],
+        ["avatar","norm","copy rig into world"],
+        ["closet","coins","buy item spends coins"],
+        ["coins","ads","spotlight ad costs coins"],
+        ["ads","feed","ad can point at a game"],
+        ["chat","aturius","same text + emoji pipe"],
+        ["chat","mod","scan before send"],
+        ["chat","notif","new message ping"],
+        ["aturius","phone","call stage opens"],
+        ["aturius","norm","/c follow joins world"],
+        ["phone","aturius","speech → words back"],
+        ["feed","unknown","fallback card lives here"],
+        ["feed","studio","studio never stays on Feed"],
+        ["studio","unknown","hard fail posts report"],
+        ["studio","norm","publish lands in Norm"],
+        ["norm","cvb","chat can speak from neck"],
+        ["norm","presence","room players tick"],
+        ["norm","chat","in-world line also chats"],
+        ["norm","lands","Living Lands is a world toy"],
+        ["presence","servers","who is actually in"],
+        ["cvb","mod","voice only after scan"],
+        ["videos","mod","heavy review queue"],
+        ["videos","feed","separate from Feed cards"],
+        ["notif","account","login stamps last seen"],
+        ["update","boot","new cache after restart"],
+        ["settings","theme","pick Midnight / Ocean…"],
+        ["settings","account","password + display name"],
+        ["mod","chat","block or allow line"],
+        ["mod","unknown","report text still scanned"]
     ];
-    var svgW = 1000, svgH = 560;
+    var svgW = 1400, svgH = 900;
     function nx(n) { return n.x / 100 * svgW; }
     function ny(n) { return n.y / 100 * svgH; }
     var byId = {};
     nodes.forEach(function (n) { byId[n.id] = n; });
+    var colors = ["#38bdf8","#a78bfa","#34d399","#fbbf24","#fb7185","#22d3ee","#c084fc","#4ade80"];
     var paths = wires.map(function (w, i) {
         var a = byId[w[0]], b = byId[w[1]];
         if (!a || !b) return "";
-        var x1 = nx(a)+90, y1 = ny(a)+28, x2 = nx(b)+90, y2 = ny(b)+28;
-        var mid = (x1 + x2) / 2;
-        var color = ["#38bdf8","#a78bfa","#34d399","#fbbf24","#fb7185"][i % 5];
-        return '<path d="M'+x1+' '+y1+' C '+mid+' '+y1+', '+mid+' '+y2+', '+x2+' '+y2+'" fill="none" stroke="'+color+'" stroke-width="3"/>' +
-            '<circle cx="'+x1+'" cy="'+y1+'" r="4" fill="'+color+'"/><circle cx="'+x2+'" cy="'+y2+'" r="4" fill="'+color+'"/>';
+        var x1 = nx(a) + 88, y1 = ny(a) + 24, x2 = nx(b) + 88, y2 = ny(b) + 24;
+        var midX = (x1 + x2) / 2 + ((i % 2) ? 40 : -40);
+        var midY = (y1 + y2) / 2 + ((i % 3) - 1) * 28;
+        var color = colors[i % colors.length];
+        return '<path class="azora-wire-line" data-i="'+i+'" d="M'+x1+' '+y1+' C '+midX+' '+y1+', '+midX+' '+y2+', '+x2+' '+y2+'" fill="none" stroke="'+color+'" stroke-width="2.4"/>';
+    }).join("");
+    var dots = wires.map(function (w, i) {
+        return '<circle class="azora-wire-pkt" data-i="'+i+'" r="4.5" fill="'+colors[i % colors.length]+'"></circle>';
     }).join("");
     var cards = nodes.map(function (n) {
-        return '<article class="azora-wire-node" style="left:'+n.x+'%;top:'+n.y+'%;">' +
-            '<h4>'+n.title+'</h4><p class="wire-go">Goes to: '+n.go+'</p><p class="wire-does">Does: '+n.does+'</p></article>';
+        return '<article class="azora-wire-node" data-node="'+n.id+'" style="left:'+n.x+'%;top:'+n.y+'%;">' +
+            '<i></i><h4>'+n.title+'</h4><p class="wire-go">Goes to: '+n.go+'</p><p class="wire-does">Does: '+n.does+'</p></article>';
     }).join("");
-    stage.innerHTML = '<svg class="azora-wire-svg" viewBox="0 0 '+svgW+' '+svgH+'" preserveAspectRatio="none">'+paths+"</svg>" + cards;
+    stage.innerHTML = '<div class="azora-wire-grid"></div><svg class="azora-wire-svg" viewBox="0 0 '+svgW+' '+svgH+'" preserveAspectRatio="none">'+paths+dots+"</svg>" + cards;
+    if (log) log.innerHTML = "<h3>Live packets</h3>";
     ov.style.display = "flex";
     ov.setAttribute("aria-hidden", "false");
+
+    var svg = stage.querySelector("svg");
+    var pkts = stage.querySelectorAll(".azora-wire-pkt");
+    var lines = stage.querySelectorAll(".azora-wire-line");
+    _azoraWirePackets = [];
+    for (var p = 0; p < pkts.length; p++) {
+        var path = lines[p];
+        if (!path) continue;
+        _azoraWirePackets.push({ el: pkts[p], path: path, t: Math.random(), spd: 0.004 + Math.random() * 0.01, wire: wires[p] });
+    }
+    var tick = 0;
+    if (_azoraWireTimer) clearInterval(_azoraWireTimer);
+    _azoraWireTimer = setInterval(function () {
+        tick++;
+        _azoraWirePackets.forEach(function (pkt) {
+            pkt.t += pkt.spd;
+            if (pkt.t > 1) {
+                pkt.t = 0;
+                if (log && pkt.wire) {
+                    var line = document.createElement("div");
+                    line.textContent = pkt.wire[0] + " → " + pkt.wire[1] + " · " + pkt.wire[2];
+                    log.appendChild(line);
+                    while (log.children.length > 18) log.removeChild(log.children[1]);
+                }
+                var live = document.getElementById("azoraWireLive");
+                if (live && pkt.wire) live.textContent = pkt.wire[0] + " ⇢ " + pkt.wire[1] + " · " + pkt.wire[2];
+                var nodeEl = stage.querySelector('[data-node="'+pkt.wire[1]+'"]');
+                if (nodeEl) {
+                    nodeEl.classList.add("pulse");
+                    setTimeout(function () { nodeEl.classList.remove("pulse"); }, 420);
+                }
+            }
+            try {
+                var len = pkt.path.getTotalLength();
+                var pt = pkt.path.getPointAtLength(pkt.t * len);
+                pkt.el.setAttribute("cx", pt.x);
+                pkt.el.setAttribute("cy", pt.y);
+            } catch (e) {}
+        });
+        if (tick % 9 === 0) {
+            var n = nodes[Math.floor(Math.random() * nodes.length)];
+            var el = stage.querySelector('[data-node="'+n.id+'"]');
+            if (el) { el.classList.add("pulse"); setTimeout(function () { el.classList.remove("pulse"); }, 500); }
+        }
+    }, 40);
 }
 
 function closeAzoraWireMap() {
+    if (_azoraWireTimer) { clearInterval(_azoraWireTimer); _azoraWireTimer = null; }
     var ov = document.getElementById("azoraWireOverlay");
     if (ov) {
         ov.style.display = "none";

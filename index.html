@@ -13,7 +13,7 @@
     <link rel="manifest" href="manifest-azora.json">
     <link rel="apple-touch-icon" href="logo.jpg?v=70.2">
     <link rel="icon" href="logo.jpg?v=70.2">
-    <link rel="stylesheet" href="style.css?v=72.15">
+    <link rel="stylesheet" href="style.css?v=72.16">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
@@ -1529,10 +1529,13 @@
 <div id="azoraWireOverlay" class="azora-wire-overlay" style="display:none;" aria-hidden="true">
     <div class="azora-wire-top">
         <strong>AZORA WIRE MAP</strong>
-        <span>Hidden board — where things go</span>
+        <span id="azoraWireLive">Hidden board — packets moving</span>
         <button type="button" id="azoraWireClose" onclick="closeAzoraWireMap()">Close</button>
     </div>
-    <div class="azora-wire-stage" id="azoraWireStage"></div>
+    <div class="azora-wire-wrap">
+        <div class="azora-wire-stage" id="azoraWireStage"></div>
+        <aside class="azora-wire-log" id="azoraWireLog"></aside>
+    </div>
 </div>
 
 <div id="unknownErrorOverlay" class="unknown-error-overlay" style="display:none;" aria-hidden="true">
@@ -1582,7 +1585,7 @@
 
 <!-- Optional: trained Aturius brain (export from Azora account → Settings → Export code files) -->
 <script src="aturius-training-pack.js"></script>
-<script src="script.js?v=72.36"></script>
+<script src="script.js?v=72.37"></script>
 <script src="political-earth-data.js?v=72.24"></script>
 <script src="political-earth-hd.js?v=72.24"></script>
 <script src="political-earth-hyper.js?v=72.26"></script>
