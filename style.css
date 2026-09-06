@@ -7296,11 +7296,14 @@ html[data-theme="dark"] .azora-bg-wave { background: transparent; }
 .unknown-error-overlay {
     position: fixed;
     inset: 0;
-    z-index: 13000;
+    z-index: 2147483642 !important;
     display: none;
     align-items: center;
     justify-content: center;
     background: #1a1a1a;
+}
+.unknown-error-overlay.open {
+    display: flex !important;
 }
 .unknown-error-sheet {
     width: min(720px, calc(100vw - 28px));

@@ -7954,19 +7954,36 @@ function feedGameKindLabel(game) {
     return d;
 }
 
-function playAzoraGame(gameId) {
-    loadAzaFnGames();
-    var game = azaFnGames.find(function (g) { return g.id === gameId; });
-    if (!game) { alert("Game not found."); return; }
-    if (typeof isUnknownErrorGame === "function" && isUnknownErrorGame(game)) {
-        if (typeof openUnknownErrorLayout === "function") {
-            openUnknownErrorLayout(game);
-            return;
+function findFeedGameById(gameId) {
+    var id = String(gameId || "");
+    var lists = [];
+    try { if (typeof azaFnGames !== "undefined" && Array.isArray(azaFnGames)) lists.push(azaFnGames); } catch (e1) {}
+    try { lists.push(JSON.parse(localStorage.getItem("azoraAzaFnGames") || "[]")); } catch (e2) {}
+    try { lists.push(JSON.parse(localStorage.getItem("azoraPublishedGames") || "[]")); } catch (e3) {}
+    for (var i = 0; i < lists.length; i++) {
+        var list = lists[i];
+        if (!Array.isArray(list)) continue;
+        for (var j = 0; j < list.length; j++) {
+            if (list[j] && String(list[j].id) === id) return list[j];
         }
+    }
+    return null;
+}
+
+function playAzoraGame(gameId) {
+    try { loadAzaFnGames(); } catch (eLoad) {}
+    var game = findFeedGameById(gameId);
+    if (!game) { alert("Game not found."); return; }
+    if ((typeof isUnknownErrorGame === "function" && isUnknownErrorGame(game)) ||
+        game.gameKind === "unknown-error" || game.layout === "error-text" || game.unknownFallback ||
+        (game.playConfig && game.playConfig.theme === "error-text")) {
+        openUnknownErrorLayout(game);
+        return;
     }
     if (!game.playConfig || !game.playConfig.theme) { game.playConfig = buildPlayConfig(game.description || game.title || "", game.dimensions || "2D"); game.genre = game.playConfig.genre; saveAzaFnGames(); }
     startGamePlay(game);
 }
+window.playAzoraGame = playAzoraGame;
 function startGamePlay(game) {
     stopGamePlayLoops();
     _play.game = game;
@@ -21570,6 +21587,7 @@ function closeDailyClaimPopup() {
     var ov = document.getElementById("dailyClaimOverlay");
     if (ov) {
         ov.style.display = "none";
+        ov.classList.remove("open");
         ov.setAttribute("aria-hidden", "true");
     }
     // Prevent reopen loop until they claim or a new day
@@ -28561,8 +28579,19 @@ function publishUnknownErrorFeedGame(username, reason) {
     return game;
 }
 
-function openUnknownErrorLayout(game) {
+function ensureUnknownErrorOverlay() {
     var ov = document.getElementById("unknownErrorOverlay");
+    if (ov) return ov;
+    ov = document.createElement("div");
+    ov.id = "unknownErrorOverlay";
+    ov.className = "unknown-error-overlay";
+    ov.innerHTML = '<div class="unknown-error-sheet"><div class="unknown-error-bar"><span>UNKNOWN · PUBLISH REPORT</span><button type="button" class="unknown-error-close" onclick="closeUnknownErrorLayout()">Close</button></div><div class="unknown-error-body" id="unknownErrorBody"></div><p class="unknown-error-hint">Select any word for its definition.</p></div><div id="unknownWordPopup" class="unknown-word-popup" style="display:none;"><strong id="unknownWordTitle"></strong><p id="unknownWordDef"></p><button type="button" onclick="closeUnknownWordPopup()">Close</button></div>';
+    document.body.appendChild(ov);
+    return ov;
+}
+
+function openUnknownErrorLayout(game) {
+    var ov = ensureUnknownErrorOverlay();
     var body = document.getElementById("unknownErrorBody");
     if (!ov || !body) return;
     game = convertGameToUnknownError(game || {}, (game && game.errorReason) || "a publish error stopped the upload");
@@ -28576,13 +28605,16 @@ function openUnknownErrorLayout(game) {
         return '<button type="button" class="' + cls + '" onclick="showUnknownWordPopup(this)">' + String(w).replace(/</g, "&lt;") + "</button>";
     }).join("");
     ov.style.display = "flex";
+    ov.classList.add("open");
     ov.setAttribute("aria-hidden", "false");
+    ov.style.zIndex = "2147483642";
     closeUnknownWordPopup();
 }
 
 function closeUnknownErrorLayout() {
     var ov = document.getElementById("unknownErrorOverlay");
     if (ov) {
+        ov.classList.remove("open");
         ov.style.display = "none";
         ov.setAttribute("aria-hidden", "true");
     }
