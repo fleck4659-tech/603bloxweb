@@ -29176,36 +29176,45 @@ function paintEqetechFace(tex, state) {
     var shine = 1 - (state.noShine || 0);
     var longM = state.longMouth || 0;
     var lx = w * 0.36, rx = w * 0.64, eyeY = h * 0.40;
-    var eyeRx = w * 0.072 * (1 + unhappy * 0.18), eyeRy = h * 0.082 * (1 + unhappy * 0.08);
+    var eyeRx = w * 0.074, eyeRy = h * (0.084 + unhappy * 0.02);
     function eye(ex) {
         ctx.fillStyle = "#111111";
         ctx.beginPath();
         ctx.ellipse(ex, eyeY, eyeRx, eyeRy, 0, 0, Math.PI * 2);
         ctx.fill();
-        if (shine > 0.04) {
-            ctx.fillStyle = "rgba(255,255,255," + (0.55 * shine) + ")";
+        if (shine > 0.05) {
+            ctx.fillStyle = "rgba(255,255,255," + (0.5 * shine) + ")";
             ctx.beginPath();
-            ctx.ellipse(ex - eyeRx * 0.28, eyeY - eyeRy * 0.32, eyeRx * 0.22, eyeRy * 0.22, 0, 0, Math.PI * 2);
+            ctx.ellipse(ex - eyeRx * 0.28, eyeY - eyeRy * 0.32, eyeRx * 0.2, eyeRy * 0.2, 0, 0, Math.PI * 2);
             ctx.fill();
         }
     }
     eye(lx);
     eye(rx);
-    var mouthY = h * 0.60;
+    var mouthY = h * 0.58;
     ctx.fillStyle = "#111111";
     ctx.strokeStyle = "#111111";
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
-    if (longM > 0.08) {
+    if (longM > 0.04) {
+        var mw = w * (0.055 + longM * 0.015);
+        var mh = h * (0.06 + longM * 0.20);
+        var mx = w * 0.5 - mw;
+        var my = mouthY;
         ctx.beginPath();
-        ctx.ellipse(w * 0.5, mouthY + h * 0.03 + longM * h * 0.1, w * (0.07 + longM * 0.03), h * (0.045 + longM * 0.16), 0, 0, Math.PI * 2);
+        ctx.moveTo(mx + mw, my);
+        ctx.lineTo(mx + mw * 2, my);
+        ctx.arcTo(mx + mw * 2 + mw * 0.2, my + mh, mx + mw, my + mh, mw);
+        ctx.arcTo(mx - mw * 0.2, my + mh, mx, my, mw);
+        ctx.closePath();
         ctx.fill();
     } else {
-        ctx.lineWidth = Math.max(12, w * 0.06);
-        var dip = h * 0.16 * (1 - unhappy * 0.85);
+        ctx.lineWidth = Math.max(11, w * 0.055);
+        var dip = h * 0.14 * (1 - unhappy);
         ctx.beginPath();
-        ctx.moveTo(w * 0.28, mouthY);
-        ctx.quadraticCurveTo(w * 0.5, mouthY + Math.max(h * 0.02, dip), w * 0.72, mouthY);
+        ctx.moveTo(w * 0.34, mouthY);
+        if (dip < h * 0.03) ctx.lineTo(w * 0.66, mouthY);
+        else ctx.quadraticCurveTo(w * 0.5, mouthY + dip, w * 0.66, mouthY);
         ctx.stroke();
     }
     tex.needsUpdate = true;
@@ -29282,10 +29291,10 @@ function playEqetechScene() {
     if (_eqetechAnim) cancelAnimationFrame(_eqetechAnim);
     function frame() {
         var t = Date.now() - startAt;
-        state.unhappy = Math.min(1, Math.max(0, (t - 1600) / 900));
-        state.noShine = Math.min(1, Math.max(0, (t - 2500) / 700));
-        state.longMouth = Math.min(1, Math.max(0, (t - 3000) / 900));
-        state.closer = Math.min(1, Math.max(0, (t - 3600) / 800));
+        state.unhappy = Math.min(1, Math.max(0, (t - 700) / 900));
+        state.noShine = Math.min(1, Math.max(0, (t - 1100) / 700));
+        state.longMouth = Math.min(1, Math.max(0, (t - 1600) / 1000));
+        state.closer = Math.min(1, Math.max(0, (t - 2200) / 900));
         if (world && world.camera) {
             world.camera.position.set(0, 0, 3.4);
             world.camera.lookAt(0, 0, 0);
@@ -29307,7 +29316,11 @@ function playEqetechScene() {
     setTimeout(function () {
         var msg = "DON'T SAY THAT AGAIN";
         var i = 0;
-        if (text) { text.textContent = ""; text.classList.add("shake"); }
+        if (text) {
+            text.textContent = "";
+            text.classList.add("shake");
+            text.style.color = "#ef4444";
+        }
         var ty = setInterval(function () {
             if (!text) { clearInterval(ty); return; }
             text.textContent = msg.slice(0, ++i);
