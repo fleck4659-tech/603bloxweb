@@ -1224,7 +1224,72 @@
                 octx.fillStyle = cr.type === "plane" ? "#0f172a" : (cr.type === "sub" ? "#334155" : "#1e3a8a");
                 octx.fillRect(cr.x * sx - 2, cr.y * sy - 2, 4, 4);
             });
+            drawWarFrontFlags(octx, sx, sy);
         }
+    }
+    var _warFlagCache = [];
+    var _warFlagTick = -1;
+    function isWarPair(aId, bId) {
+        if (!aId || !bId || aId === bId) return false;
+        var a = findCountry(aId), b = findCountry(bId);
+        if (!a || !b) return false;
+        return !!(findWar(a, bId) || findWar(b, aId));
+    }
+    function collectWarFrontFlags() {
+        var out = [], seen = {}, step = W > 700 ? 3 : 2, i, x, y, nbs, k, aId, bId;
+        nbs = [1, -1, W, -W];
+        for (y = 1; y < H - 1; y += step) {
+            for (x = 1; x < W - 1; x += step) {
+                i = y * W + x;
+                aId = owner[i];
+                if (!aId || !elev[i]) continue;
+                for (k = 0; k < 4; k++) {
+                    bId = owner[i + nbs[k]];
+                    if (!bId || bId === aId) continue;
+                    if (!elev[i + nbs[k]]) continue;
+                    if (!isWarPair(aId, bId)) continue;
+                    var key = (aId < bId ? aId + ":" + bId : bId + ":" + aId) + ":" + ((x / 6) | 0) + ":" + ((y / 6) | 0);
+                    if (seen[key]) continue;
+                    seen[key] = 1;
+                    var A = findCountry(aId), B = findCountry(bId);
+                    out.push({ x: x, y: y, fillA: A && A.fill, strokeA: A && A.stroke, fillB: B && B.fill, strokeB: B && B.stroke });
+                    if (out.length > 90) return out;
+                }
+            }
+        }
+        return out;
+    }
+    function drawLittleFlag(octx, px, py, fill, stroke, dir) {
+        var poleH = 10;
+        octx.strokeStyle = "#111";
+        octx.lineWidth = 1.2;
+        octx.beginPath();
+        octx.moveTo(px, py);
+        octx.lineTo(px, py - poleH);
+        octx.stroke();
+        octx.fillStyle = fill || "#64748b";
+        octx.strokeStyle = stroke || "#111";
+        var w = 8, h = 5;
+        octx.beginPath();
+        octx.moveTo(px, py - poleH);
+        octx.lineTo(px + dir * w, py - poleH + 2);
+        octx.lineTo(px + dir * w, py - poleH + 2 + h);
+        octx.lineTo(px, py - poleH + h);
+        octx.closePath();
+        octx.fill();
+        octx.stroke();
+    }
+    function drawWarFrontFlags(octx, sx, sy) {
+        if (mode !== "play" && mode !== "pause") return;
+        if (_warFlagTick !== simTick) {
+            _warFlagCache = collectWarFrontFlags();
+            _warFlagTick = simTick;
+        }
+        _warFlagCache.forEach(function (f) {
+            var px = f.x * sx, py = f.y * sy;
+            drawLittleFlag(octx, px - 3, py, f.fillA, f.strokeA, -1);
+            drawLittleFlag(octx, px + 3, py, f.fillB, f.strokeB, 1);
+        });
     }
     function scrollCountryIntoList(id) {
         var row = document.querySelector('#llCountryList .ll-c-row[data-id="' + id + '"]');

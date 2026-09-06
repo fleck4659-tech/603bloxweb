@@ -29164,70 +29164,121 @@ function startEqetechEgg(input) {
     setTimeout(step, 200);
 }
 
-function drawEqetechAturius(state) {
-    var canvas = document.getElementById("eqetechCanvas");
-    if (!canvas) return;
-    var ctx = canvas.getContext("2d");
-    var w = canvas.width, h = canvas.height;
-    ctx.clearRect(0, 0, w, h);
-    var cx = w / 2, cy = h / 2 + 8;
-    var r = 148;
-    var g = ctx.createRadialGradient(cx - 40, cy - 50, 20, cx, cy, r);
-    g.addColorStop(0, "#ffe566");
-    g.addColorStop(0.45, "#ffcc00");
-    g.addColorStop(1, "#d4a000");
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,0.18)";
-    ctx.beginPath();
-    ctx.ellipse(cx - 36, cy - 48, 46, 22, -0.4, 0, Math.PI * 2);
-    ctx.fill();
+var _eqe3d = null;
 
-    var eyeY = cy - 18;
-    var eyeRx = 18, eyeRy = 22;
+function paintEqetechFace(tex, state) {
+    if (!tex || !tex.image) return;
+    var c = tex.image;
+    var ctx = c.getContext("2d");
+    var w = c.width, h = c.height;
+    ctx.clearRect(0, 0, w, h);
+    var unhappy = state.unhappy || 0;
     var shine = 1 - (state.noShine || 0);
-    function eye(ex) {
+    var longM = state.longMouth || 0;
+    var lx = w * 0.36, rx = w * 0.64, eyeY = h * 0.40;
+    var eyeRx = w * 0.072, eyeRy = h * 0.082;
+    function eye(ex, tilt) {
         ctx.fillStyle = "#111111";
         ctx.beginPath();
-        ctx.ellipse(ex, eyeY, eyeRx, eyeRy, 0, 0, Math.PI * 2);
+        ctx.ellipse(ex, eyeY + unhappy * h * 0.008, eyeRx * (1 - unhappy * 0.12), eyeRy, tilt || 0, 0, Math.PI * 2);
         ctx.fill();
-        if (shine > 0.02) {
+        if (shine > 0.04) {
             ctx.fillStyle = "rgba(255,255,255," + (0.55 * shine) + ")";
             ctx.beginPath();
-            ctx.ellipse(ex - 5, eyeY - 7, 5, 5, 0, 0, Math.PI * 2);
+            ctx.ellipse(ex - eyeRx * 0.28, eyeY - eyeRy * 0.32, eyeRx * 0.22, eyeRy * 0.22, 0, 0, Math.PI * 2);
             ctx.fill();
         }
     }
-    eye(cx - 48);
-    eye(cx + 48);
-
-    ctx.strokeStyle = "#111111";
-    ctx.fillStyle = "#111111";
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    var happy = 1 - (state.unhappy || 0);
-    var longM = state.longMouth || 0;
-    var mouthY = cy + 48;
-    ctx.lineWidth = 14;
-    if (longM > 0.05) {
-        var tall = 10 + longM * 70;
+    if (unhappy > 0.45) {
+        eye(lx, 0.32);
+        eye(rx, -0.32);
+        ctx.strokeStyle = "#111111";
+        ctx.lineWidth = Math.max(5, w * 0.028);
         ctx.beginPath();
-        ctx.ellipse(cx, mouthY + tall * 0.35, 22 + longM * 6, tall * 0.5, 0, 0, Math.PI * 2);
-        ctx.fill();
-    } else if (happy > 0.55) {
-        ctx.beginPath();
-        ctx.moveTo(cx - 58, mouthY);
-        ctx.quadraticCurveTo(cx, mouthY + 28 * happy, cx + 58, mouthY);
+        ctx.moveTo(lx - eyeRx, eyeY - eyeRy * 1.15);
+        ctx.lineTo(lx + eyeRx * 0.55, eyeY - eyeRy * 0.45);
+        ctx.moveTo(rx + eyeRx, eyeY - eyeRy * 1.15);
+        ctx.lineTo(rx - eyeRx * 0.55, eyeY - eyeRy * 0.45);
         ctx.stroke();
     } else {
-        var frown = (0.55 - happy) / 0.55;
+        eye(lx, 0);
+        eye(rx, 0);
+    }
+    var mouthY = h * 0.60;
+    ctx.fillStyle = "#111111";
+    ctx.strokeStyle = "#111111";
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    if (longM > 0.08) {
         ctx.beginPath();
-        ctx.moveTo(cx - 52, mouthY + 10);
-        ctx.quadraticCurveTo(cx, mouthY - 18 * frown, cx + 52, mouthY + 10);
+        ctx.ellipse(w * 0.5, mouthY + h * 0.02 + longM * h * 0.08, w * (0.08 + longM * 0.04), h * (0.05 + longM * 0.14), 0, 0, Math.PI * 2);
+        ctx.fill();
+    } else if (unhappy < 0.5) {
+        ctx.lineWidth = Math.max(12, w * 0.06);
+        ctx.beginPath();
+        ctx.moveTo(w * 0.28, mouthY);
+        ctx.quadraticCurveTo(w * 0.5, mouthY + h * 0.16 * (1 - unhappy * 1.4), w * 0.72, mouthY);
+        ctx.stroke();
+    } else {
+        ctx.lineWidth = Math.max(10, w * 0.055);
+        ctx.beginPath();
+        ctx.moveTo(w * 0.30, mouthY + h * 0.08);
+        ctx.quadraticCurveTo(w * 0.5, mouthY - h * 0.08, w * 0.70, mouthY + h * 0.08);
         ctx.stroke();
     }
+    tex.needsUpdate = true;
+}
+
+function initEqetechAturius3D() {
+    var canvas = document.getElementById("eqetechCanvas");
+    if (!canvas || typeof THREE === "undefined") return null;
+    if (_eqe3d && _eqe3d.renderer) {
+        try { _eqe3d.renderer.setSize(canvas.clientWidth || 512, canvas.clientHeight || 512, false); } catch (e) {}
+        return _eqe3d;
+    }
+    var w = canvas.clientWidth || 512, h = canvas.clientHeight || 512;
+    if (w < 80) w = 512;
+    if (h < 80) h = 512;
+    canvas.width = w;
+    canvas.height = h;
+    var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+    renderer.setSize(w, h, false);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setClearColor(0x000000, 0);
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(40, w / h, 0.1, 100);
+    camera.position.set(0, 0, 3.4);
+    camera.lookAt(0, 0, 0);
+    var key = new THREE.DirectionalLight(0xffffff, 1.1);
+    key.position.set(2, 3, 5);
+    scene.add(key);
+    var amb = new THREE.AmbientLight(0xffffff, 0.65);
+    scene.add(amb);
+    var sphere = new THREE.Mesh(
+        new THREE.SphereGeometry(1, 48, 48),
+        new THREE.MeshStandardMaterial({ color: 0xffcc00, roughness: 0.4, metalness: 0.05 })
+    );
+    scene.add(sphere);
+    var faceCanvas = document.createElement("canvas");
+    faceCanvas.width = 512;
+    faceCanvas.height = 512;
+    var faceTex = new THREE.CanvasTexture(faceCanvas);
+    faceTex.minFilter = THREE.LinearFilter;
+    faceTex.magFilter = THREE.LinearFilter;
+    var faceMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.35, 1.35),
+        new THREE.MeshBasicMaterial({ map: faceTex, transparent: true, depthTest: true, depthWrite: false, side: THREE.DoubleSide })
+    );
+    faceMesh.position.set(0, 0.05, 1.25);
+    scene.add(faceMesh);
+    _eqe3d = { renderer: renderer, scene: scene, camera: camera, sphere: sphere, faceMesh: faceMesh, faceTex: faceTex, key: key, amb: amb };
+    return _eqe3d;
+}
+
+function disposeEqetechAturius3D() {
+    if (!_eqe3d) return;
+    try { if (_eqe3d.renderer) _eqe3d.renderer.dispose(); } catch (e) {}
+    _eqe3d = null;
 }
 
 function playEqetechScene() {
@@ -29238,8 +29289,9 @@ function playEqetechScene() {
     ov.style.display = "flex";
     ov.className = "eqetech-overlay fadein";
     ov.setAttribute("aria-hidden", "false");
-    if (text) text.textContent = "";
+    if (text) { text.textContent = ""; text.classList.remove("shake"); }
     if (face) face.className = "eqetech-face";
+    var world = initEqetechAturius3D();
     var state = { unhappy: 0, noShine: 0, longMouth: 0, closer: 0 };
     var startAt = Date.now();
     if (_eqetechAnim) cancelAnimationFrame(_eqetechAnim);
@@ -29249,19 +29301,28 @@ function playEqetechScene() {
         state.noShine = Math.min(1, Math.max(0, (t - 2500) / 700));
         state.longMouth = Math.min(1, Math.max(0, (t - 3000) / 900));
         state.closer = Math.min(1, Math.max(0, (t - 3600) / 800));
-        if (face) face.style.transform = "scale(" + (0.92 + state.closer * 0.7) + ") translateY(" + (state.closer * 20) + "px)";
-        drawEqetechAturius(state);
+        if (world && world.camera) {
+            world.camera.position.z = 3.4 - state.closer * 1.55;
+            world.camera.position.x = Math.sin(t / 90) * state.closer * 0.04;
+            world.camera.position.y = Math.cos(t / 80) * state.closer * 0.03;
+            world.camera.lookAt(0, -0.08 * state.closer, 0);
+            if (world.key) world.key.intensity = 1.1 - state.unhappy * 0.55;
+            if (world.amb) world.amb.intensity = 0.65 - state.unhappy * 0.28;
+            if (world.sphere && world.sphere.material) {
+                world.sphere.material.color.setRGB(1, 0.8 - state.unhappy * 0.12, 0.05);
+            }
+            paintEqetechFace(world.faceTex, state);
+            try { world.renderer.render(world.scene, world.camera); } catch (e) {}
+        }
+        if (face) face.style.transform = "scale(" + (0.96 + state.closer * 0.18) + ")";
         if (t < 9500) _eqetechAnim = requestAnimationFrame(frame);
     }
-    drawEqetechAturius({ unhappy: 0, noShine: 0, longMouth: 0 });
+    paintEqetechFace(world && world.faceTex, state);
     _eqetechAnim = requestAnimationFrame(frame);
     setTimeout(function () {
         var msg = "DON'T SAY THAT AGAIN";
         var i = 0;
-        if (text) {
-            text.textContent = "";
-            text.classList.add("shake");
-        }
+        if (text) { text.textContent = ""; text.classList.add("shake"); }
         var ty = setInterval(function () {
             if (!text) { clearInterval(ty); return; }
             text.textContent = msg.slice(0, ++i);
@@ -29273,6 +29334,7 @@ function playEqetechScene() {
 
 function closeEqetechEgg() {
     if (_eqetechAnim) { cancelAnimationFrame(_eqetechAnim); _eqetechAnim = 0; }
+    try { disposeEqetechAturius3D(); } catch (e) {}
     var ov = document.getElementById("eqetechOverlay");
     if (ov) {
         ov.className = "eqetech-overlay";
