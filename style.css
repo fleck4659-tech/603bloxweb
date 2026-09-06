@@ -7388,3 +7388,36 @@ html[data-theme="dark"] .azora-bg-wave { background: transparent; }
     margin: 0 0 12px;
     color: #111 !important;
 }
+
+.azora-emoji-picker {
+    position: fixed;
+    z-index: 2147483645;
+    max-height: 220px;
+    overflow-y: auto;
+    background: #0b1224;
+    color: #f8fafc;
+    border: 2px solid #4f46e5;
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.4);
+}
+.azora-emoji-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    margin: 0 0 4px !important;
+    padding: 6px 8px !important;
+    background: transparent !important;
+    color: #f8fafc !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    text-align: left;
+    cursor: pointer;
+    box-shadow: none !important;
+}
+.azora-emoji-item.on, .azora-emoji-item:hover {
+    background: #1d4ed8 !important;
+}
+.azora-emoji-face { font-size: 20px; width: 28px; text-align: center; }
+.azora-emoji-code { font-size: 12px; color: #c7d2fe; }

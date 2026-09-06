@@ -8669,6 +8669,7 @@ function azaFnAddComment(gameId) {
     }
     var input = document.getElementById("commentInput_" + gameId);
     var text = (input && input.value || "").trim();
+    if (typeof applyAzoraEmojis === "function") text = applyAzoraEmojis(text);
     if (!text) return;
     var myName = (JSON.parse(localStorage.getItem("azoraAccount") || "{}")).username || "";
     if (!myName) return;
@@ -13500,6 +13501,7 @@ function sendAturiusMessage(presetText) {
     var input = document.getElementById("aturiusInput");
     if (!input) return;
     var text = (typeof presetText === "string") ? presetText.trim() : (input.value || "").trim();
+    if (typeof applyAzoraEmojis === "function") text = applyAzoraEmojis(text);
     var att = _aturiusPendingAttach;
     if (!text && !att) return;
     if (text && typeof azoraAutoModerate === "function") {
@@ -14158,6 +14160,7 @@ function sendChatMessage() {
     var input = document.getElementById("chatInput");
     if (!input) return;
     var text = (input.value || "").trim();
+    if (typeof applyAzoraEmojis === "function") text = applyAzoraEmojis(text);
     if (!text) return;
 
     if (!currentChatFriend) currentChatFriend = AZORA_AI_ID;
@@ -19104,6 +19107,7 @@ function sendNormChat() {
     if (!input) return;
     if (input.dataset.cvbScanning === "1") return;
     var msg = (input.value || "").trim();
+    if (typeof applyAzoraEmojis === "function") msg = applyAzoraEmojis(msg);
     if (!msg) return;
 
     var cmd = msg.trim().toLowerCase();
@@ -28644,3 +28648,230 @@ window.closeUnknownErrorLayout = closeUnknownErrorLayout;
 window.showUnknownWordPopup = showUnknownWordPopup;
 window.closeUnknownWordPopup = closeUnknownWordPopup;
 window.migrateUnknownFallbackGames = migrateUnknownFallbackGames;
+
+/* ===== Azora emoji shortcodes (:smile:) for every chat box ===== */
+var AZORA_EMOJIS = [
+    ["smile","😄"],["smiley","😃"],["grin","😁"],["laugh","😂"],["joy","😂"],["rofl","🤣"],
+    ["wink","😉"],["blush","😊"],["slight_smile","🙂"],["upside_down","🙃"],["innocent","😇"],
+    ["heart_eyes","😍"],["star_struck","🤩"],["think","🤔"],["think","🤔"],["shush","🤫"],
+    ["zipper","🤐"],["neutral","😐"],["expressionless","😑"],["unamused","😒"],["roll_eyes","🙄"],
+    ["sleep","😴"],["sleepy","😪"],["drool","🤤"],["mask","😷"],["sick","🤒"],["hurt","🤕"],
+    ["cool","😎"],["nerd","🤓"],["monocle","🧐"],["party","🥳"],["tada","🎉"],["confetti","🎊"],
+    ["clap","👏"],["wave","👋"],["thumbsup","👍"],["thumbsdown","👎"],["ok","👌"],["peace","✌️"],
+    ["punch","👊"],["fist","✊"],["pray","🙏"],["muscle","💪"],["eyes","👀"],["eye","👁️"],
+    ["brain","🧠"],["tongue","😛"],["stuck_out_tongue","😛"],["razz","😜"],["zany","🤪"],
+    ["heart","❤️"],["orange_heart","🧡"],["yellow_heart","💛"],["green_heart","💚"],["blue_heart","💙"],
+    ["purple_heart","💜"],["black_heart","🖤"],["white_heart","🤍"],["sparkling_heart","💖"],
+    ["two_hearts","💕"],["revolving_hearts","💞"],["gift_heart","💝"],["heartbeat","💓"],
+    ["star","⭐"],["stars","✨"],["sparkles","✨"],["boom","💥"],["fire","🔥"],["zap","⚡"],
+    ["sun","☀️"],["moon","🌙"],["rainbow","🌈"],["cloud","☁️"],["snowflake","❄️"],["umbrella","☔"],
+    ["earth","🌍"],["glowing_star","🌟"],["comet","☄️"],
+    ["dog","🐶"],["cat","🐱"],["mouse","🐭"],["hamster","🐹"],["rabbit","🐰"],["fox","🦊"],
+    ["bear","🐻"],["panda","🐼"],["koala","🐨"],["tiger","🐯"],["lion","🦁"],["cow","🐮"],
+    ["pig","🐷"],["frog","🐸"],["monkey","🐵"],["chicken","🐔"],["penguin","🐧"],["bird","🐦"],
+    ["unicorn","🦄"],["dragon","🐲"],["whale","🐳"],["dolphin","🐬"],["fish","🐟"],["octopus","🐙"],
+    ["bug","🐛"],["butterfly","🦋"],["flower","🌸"],["rose","🌹"],["tulip","🌷"],["sunflower","🌻"],
+    ["tree","🌳"],["cactus","🌵"],["leaf","🍃"],["apple","🍎"],["green_apple","🍏"],["pear","🍐"],
+    ["orange","🍊"],["lemon","🍋"],["banana","🍌"],["watermelon","🍉"],["grapes","🍇"],["strawberry","🍓"],
+    ["cherry","🍒"],["peach","🍑"],["mango","🥭"],["pineapple","🍍"],["kiwi","🥝"],["tomato","🍅"],
+    ["carrot","🥕"],["corn","🌽"],["bread","🍞"],["cheese","🧀"],["pizza","🍕"],["burger","🍔"],
+    ["fries","🍟"],["taco","🌮"],["burrito","🌯"],["popcorn","🍿"],["cookie","🍪"],["cake","🎂"],
+    ["cupcake","🧁"],["donut","🍩"],["icecream","🍦"],["chocolate","🍫"],["candy","🍬"],
+    ["lollipop","🍭"],["honey","🍯"],["tea","🍵"],["coffee","☕"],["milk","🥛"],["juice","🧃"],
+    ["water","💧"],["soccer","⚽"],["basketball","🏀"],["football","🏈"],["baseball","⚾"],["tennis","🎾"],
+    ["game","🎮"],["joystick","🕹️"],["dice","🎲"],["puzzle","🧩"],["art","🎨"],["music","🎵"],
+    ["notes","🎶"],["headphones","🎧"],["mic","🎤"],["guitar","🎸"],["bell","🔔"],["book","📖"],
+    ["pencil","✏️"],["memo","📝"],["mailbox","📬"],["gift","🎁"],["balloon","🎈"],["ribbon","🎀"],
+    ["trophy","🏆"],["medal","🏅"],["crown","👑"],["gem","💎"],["key","🔑"],["lock","🔒"],
+    ["hammer","🔨"],["wrench","🔧"],["gear","⚙️"],["light","💡"],["battery","🔋"],["computer","💻"],
+    ["phone","📱"],["camera","📷"],["tv","📺"],["robot","🤖"],["alien","👽"],["ghost","👻"],
+    ["pumpkin","🎃"],["snowman","⛄"],["check","✅"],["x","❌"],["warning","⚠️"],["question","❓"],
+    ["exclamation","❗"],["plus","➕"],["minus","➖"],["100","💯"],["new","🆕"],["ok_button","🆗"],
+    ["blue_circle","🔵"],["purple_circle","🟣"],["green_circle","🟢"],["yellow_circle","🟡"],
+    ["red_circle","🔴"],["white_circle","⚪"],["black_circle","⚫"],
+    ["house","🏠"],["school","🏫"],["castle","🏰"],["rocket","🚀"],["car","🚗"],["bus","🚌"],
+    ["bike","🚲"],["plane","✈️"],["ship","🚢"],["train","🚆"],["map","🗺️"],
+    ["hi","👋"],["hello","👋"],["yes","👍"],["no","👎"],["lol","😂"],["haha","😄"],["wow","🤩"]
+];
+
+var AZORA_EMOJI_MAP = {};
+AZORA_EMOJIS.forEach(function (row) {
+    AZORA_EMOJI_MAP[String(row[0]).toLowerCase()] = row[1];
+});
+
+function applyAzoraEmojis(text) {
+    text = String(text == null ? "" : text);
+    return text.replace(/:([a-z0-9_+-]{1,32}):/gi, function (full, code) {
+        var got = AZORA_EMOJI_MAP[String(code).toLowerCase()];
+        return got || full;
+    });
+}
+
+var _emojiState = { input: null, start: -1, items: [], idx: 0 };
+
+function hideAzoraEmojiPicker() {
+    var box = document.getElementById("azoraEmojiPicker");
+    if (box) {
+        box.style.display = "none";
+        box.innerHTML = "";
+    }
+    _emojiState.input = null;
+    _emojiState.items = [];
+    _emojiState.idx = 0;
+}
+
+function emojiMatches(q) {
+    q = String(q || "").toLowerCase();
+    var out = [];
+    for (var i = 0; i < AZORA_EMOJIS.length; i++) {
+        var code = AZORA_EMOJIS[i][0];
+        if (!q || code.indexOf(q) === 0 || code.indexOf(q) >= 0) out.push(AZORA_EMOJIS[i]);
+        if (out.length >= 36) break;
+    }
+    var seen = {};
+    return out.filter(function (row) {
+        if (seen[row[0]]) return false;
+        seen[row[0]] = true;
+        return true;
+    });
+}
+
+function placeAzoraEmojiPicker(input) {
+    var box = document.getElementById("azoraEmojiPicker");
+    if (!box || !input) return;
+    var r = input.getBoundingClientRect();
+    var top = r.top - 8;
+    box.style.left = Math.max(8, Math.min(window.innerWidth - 280, r.left)) + "px";
+    box.style.width = Math.max(220, Math.min(320, r.width)) + "px";
+    box.style.bottom = "auto";
+    box.style.top = "auto";
+    box.style.display = "block";
+    var h = box.offsetHeight || 180;
+    if (top - h < 8) box.style.top = Math.min(window.innerHeight - h - 8, r.bottom + 6) + "px";
+    else box.style.top = Math.max(8, top - h) + "px";
+}
+
+function renderAzoraEmojiPicker(items, active) {
+    var box = document.getElementById("azoraEmojiPicker");
+    if (!box) return;
+    if (!items.length) {
+        hideAzoraEmojiPicker();
+        return;
+    }
+    box.innerHTML = items.map(function (row, i) {
+        return '<button type="button" class="azora-emoji-item' + (i === active ? " on" : "") + '" data-i="' + i + '"><span class="azora-emoji-face">' + row[1] + '</span><span class="azora-emoji-code">:' + row[0] + ':</span></button>';
+    }).join("");
+    box.style.display = "block";
+    box.querySelectorAll(".azora-emoji-item").forEach(function (btn) {
+        btn.onmousedown = function (ev) {
+            ev.preventDefault();
+            pickAzoraEmoji(parseInt(btn.getAttribute("data-i"), 10));
+        };
+    });
+}
+
+function pickAzoraEmoji(i) {
+    var input = _emojiState.input;
+    var row = _emojiState.items[i];
+    if (!input || !row) return;
+    var val = input.value || "";
+    var caret = input.selectionStart != null ? input.selectionStart : val.length;
+    var start = _emojiState.start;
+    if (start < 0) start = caret;
+    input.value = val.slice(0, start) + row[1] + val.slice(caret);
+    var next = start + row[1].length;
+    input.focus();
+    try { input.setSelectionRange(next, next); } catch (e) {}
+    hideAzoraEmojiPicker();
+}
+
+function refreshAzoraEmojiPicker(input) {
+    if (!input) return hideAzoraEmojiPicker();
+    var val = input.value || "";
+    var caret = input.selectionStart != null ? input.selectionStart : val.length;
+    var left = val.slice(0, caret);
+    var m = left.match(/:([a-z0-9_+-]{0,32})$/i);
+    if (!m) {
+        hideAzoraEmojiPicker();
+        return;
+    }
+    _emojiState.input = input;
+    _emojiState.start = caret - m[0].length;
+    _emojiState.items = emojiMatches(m[1]);
+    _emojiState.idx = 0;
+    renderAzoraEmojiPicker(_emojiState.items, 0);
+    placeAzoraEmojiPicker(input);
+}
+
+function azoraEmojiKey(ev, input) {
+    var box = document.getElementById("azoraEmojiPicker");
+    var open = box && box.style.display === "block" && _emojiState.items.length;
+    if (!open) return false;
+    if (ev.key === "ArrowDown") {
+        ev.preventDefault();
+        _emojiState.idx = (_emojiState.idx + 1) % _emojiState.items.length;
+        renderAzoraEmojiPicker(_emojiState.items, _emojiState.idx);
+        placeAzoraEmojiPicker(input);
+        return true;
+    }
+    if (ev.key === "ArrowUp") {
+        ev.preventDefault();
+        _emojiState.idx = (_emojiState.idx - 1 + _emojiState.items.length) % _emojiState.items.length;
+        renderAzoraEmojiPicker(_emojiState.items, _emojiState.idx);
+        placeAzoraEmojiPicker(input);
+        return true;
+    }
+    if (ev.key === "Enter" || ev.key === "Tab") {
+        ev.preventDefault();
+        pickAzoraEmoji(_emojiState.idx);
+        return true;
+    }
+    if (ev.key === "Escape") {
+        hideAzoraEmojiPicker();
+        return true;
+    }
+    return false;
+}
+
+function attachAzoraEmojiField(input) {
+    if (!input || input.dataset.azoraEmoji === "1") return;
+    input.dataset.azoraEmoji = "1";
+    input.addEventListener("input", function () {
+        var converted = applyAzoraEmojis(input.value);
+        if (converted !== input.value) {
+            var caret = input.selectionStart;
+            var delta = converted.length - input.value.length;
+            input.value = converted;
+            try { input.setSelectionRange(caret + delta, caret + delta); } catch (e) {}
+        }
+        refreshAzoraEmojiPicker(input);
+    });
+    input.addEventListener("keydown", function (ev) {
+        azoraEmojiKey(ev, input);
+    });
+    input.addEventListener("blur", function () {
+        setTimeout(hideAzoraEmojiPicker, 180);
+    });
+}
+
+function bootAzoraEmojis() {
+    ["chatInput", "aturiusInput", "normChatInput"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) attachAzoraEmojiField(el);
+    });
+    document.querySelectorAll("input[id^='commentInput_'], textarea, input[type='text']").forEach(function (el) {
+        var ph = String(el.getAttribute("placeholder") || el.id || "").toLowerCase();
+        if (/chat|comment|message|aturius|say something|talk/.test(ph) || /commentInput_|chatInput|aturiusInput|normChatInput/.test(el.id || "")) {
+            attachAzoraEmojiField(el);
+        }
+    });
+}
+
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bootAzoraEmojis);
+else bootAzoraEmojis();
+setInterval(bootAzoraEmojis, 2500);
+
+window.applyAzoraEmojis = applyAzoraEmojis;
+window.azoraEmojiKey = azoraEmojiKey;
+window.attachAzoraEmojiField = attachAzoraEmojiField;
+window.AZORA_EMOJI_MAP = AZORA_EMOJI_MAP;
