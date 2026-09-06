@@ -13,7 +13,7 @@
     <link rel="manifest" href="manifest-azora.json">
     <link rel="apple-touch-icon" href="logo.jpg?v=70.2">
     <link rel="icon" href="logo.jpg?v=70.2">
-    <link rel="stylesheet" href="style.css?v=72.14">
+    <link rel="stylesheet" href="style.css?v=72.15">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
@@ -432,7 +432,7 @@
         <h2 class="topbar-title">Azora</h2>
     </div>
     <div class="topbar-right">
-        <span id="azoraPlayModeBadge" class="azora-play-mode-badge online" title="Connection status">Play Azora Online</span>
+        <span id="azoraPlayModeBadge" class="azora-play-mode-badge online" title="Connection status" onclick="azoraEggPlayClick(event)">Play Azora Online</span>
         <div class="currency-display coins-menu-wrap" id="coinsMenuWrap">
             <button type="button" class="coins-menu-btn" id="coinsMenuBtn" onclick="toggleCoinsDropdown(event)" aria-haspopup="true">
                 🪙 AzoraCoins: <span id="bucks">0</span> ▾
@@ -496,7 +496,7 @@
 </div>
 
 <div class="avatar-customizer-container">
-    <div id="avatar3d-canvas"></div>
+    <div id="avatar3d-canvas" onclick="azoraEggCharacterClick(event)"></div>
     <div class="customizer-controls">
         <h3>My Avatar</h3>
 
@@ -1526,6 +1526,15 @@
 
 <div id="azoraEmojiPicker" class="azora-emoji-picker" style="display:none;" role="listbox" aria-label="Azora emojis"></div>
 
+<div id="azoraWireOverlay" class="azora-wire-overlay" style="display:none;" aria-hidden="true">
+    <div class="azora-wire-top">
+        <strong>AZORA WIRE MAP</strong>
+        <span>Hidden board — where things go</span>
+        <button type="button" id="azoraWireClose" onclick="closeAzoraWireMap()">Close</button>
+    </div>
+    <div class="azora-wire-stage" id="azoraWireStage"></div>
+</div>
+
 <div id="unknownErrorOverlay" class="unknown-error-overlay" style="display:none;" aria-hidden="true">
     <div class="unknown-error-sheet">
         <div class="unknown-error-bar">
@@ -1573,7 +1582,7 @@
 
 <!-- Optional: trained Aturius brain (export from Azora account → Settings → Export code files) -->
 <script src="aturius-training-pack.js"></script>
-<script src="script.js?v=72.35"></script>
+<script src="script.js?v=72.36"></script>
 <script src="political-earth-data.js?v=72.24"></script>
 <script src="political-earth-hd.js?v=72.24"></script>
 <script src="political-earth-hyper.js?v=72.26"></script>

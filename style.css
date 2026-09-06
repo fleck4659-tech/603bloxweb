@@ -7432,3 +7432,62 @@ img.azora-cemoji {
     image-rendering: crisp-edges;
 }
 .azora-emoji-name { font-size: 10px; color: #93c5fd; margin-left: auto; }
+
+.azora-play-mode-badge { cursor: pointer; }
+
+.azora-wire-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483644;
+    display: none;
+    flex-direction: column;
+    background: #070b14;
+    color: #e2e8f0;
+}
+.azora-wire-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: #0b1224;
+    border-bottom: 1px solid #334155;
+    flex-shrink: 0;
+}
+.azora-wire-top strong { letter-spacing: 0.08em; }
+.azora-wire-top span { color: #93c5fd; font-size: 12px; flex: 1; }
+#azoraWireClose {
+    width: auto;
+    margin: 0;
+    padding: 8px 14px;
+    background: #1e293b;
+    color: #fff;
+    border: 1px solid #64748b;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.azora-wire-stage {
+    position: relative;
+    flex: 1;
+    overflow: auto;
+    min-height: 0;
+}
+.azora-wire-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+.azora-wire-node {
+    position: absolute;
+    width: 200px;
+    padding: 10px;
+    background: rgba(15, 23, 42, 0.94);
+    border: 1px solid #38bdf8;
+    border-radius: 10px;
+    box-shadow: 0 0 16px rgba(56,189,248,0.2);
+}
+.azora-wire-node h4 { margin: 0 0 6px; color: #f8fafc; font-size: 14px; }
+.azora-wire-node p { margin: 0 0 4px; font-size: 11px; line-height: 1.35; color: #cbd5e1; }
+.wire-go { color: #7dd3fc !important; }
+.wire-does { color: #c4b5fd !important; }
