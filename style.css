@@ -7540,3 +7540,80 @@ img.azora-cemoji {
     .azora-wire-log { width: auto; height: 120px; border-left: 0; border-top: 1px solid #334155; }
     .azora-wire-stage { min-width: 700px; }
 }
+
+.eqetech-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483646;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: rgba(0,0,0,0);
+    transition: background 1.1s ease;
+}
+.eqetech-overlay.fadein { background: #000; }
+.eqetech-face { position: relative; transform: scale(0.92); transition: transform 1.4s ease; }
+.eqetech-overlay.closer .eqetech-face { transform: scale(1.55) translateY(18px); }
+.eqe-antenna {
+    width: 10px; height: 28px; margin: 0 auto 4px;
+    background: #4c1d95; border-radius: 4px;
+}
+.eqe-antenna::after {
+    content: ""; display: block; width: 12px; height: 12px; margin: -8px auto 0;
+    background: #fbbf24; border-radius: 3px;
+}
+.eqe-head {
+    width: 168px; height: 168px; border-radius: 28px;
+    background: #6d28d9;
+    position: relative;
+    box-shadow: 0 0 30px rgba(139,92,246,0.45);
+    transition: background 1.2s ease, box-shadow 1.2s ease;
+}
+.eqetech-overlay.unhappy .eqe-head {
+    background: #3b0764;
+    box-shadow: 0 0 24px rgba(127,29,29,0.35);
+}
+.eqe-eye {
+    position: absolute; top: 52px; width: 34px; height: 34px;
+    background: #0f172a; border-radius: 8px;
+}
+.eqe-eye.left { left: 32px; }
+.eqe-eye.right { right: 32px; }
+.eqe-shine {
+    position: absolute; top: 6px; left: 7px; width: 10px; height: 10px;
+    background: #fff; border-radius: 3px;
+    transition: opacity 0.8s ease;
+}
+.eqetech-overlay.no-shine .eqe-shine { opacity: 0; }
+.eqe-mouth {
+    position: absolute; left: 46px; top: 108px; width: 76px; height: 14px;
+    border: 6px solid #0f172a; border-top: 0; border-radius: 0 0 40px 40px;
+    transition: height 1.2s ease, top 1.2s ease, border-radius 1.2s ease, width 1.2s ease, left 1.2s ease;
+}
+.eqetech-overlay.happy .eqe-mouth { height: 16px; }
+.eqetech-overlay.unhappy .eqe-mouth {
+    top: 102px; height: 10px; border-radius: 40px 40px 0 0; border-top: 6px solid #0f172a; border-bottom: 0;
+}
+.eqetech-overlay.long-mouth .eqe-mouth {
+    top: 96px; left: 58px; width: 52px; height: 52px;
+    border: 6px solid #0f172a; border-radius: 8px 8px 18px 18px;
+    background: #1e1b4b;
+}
+.eqetech-text {
+    margin-top: 28px;
+    min-height: 32px;
+    color: #ef4444;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    font-size: 22px;
+    text-align: center;
+}
+.eqetech-overlay.closer .eqetech-text {
+    animation: eqeShake 0.12s linear infinite;
+}
+@keyframes eqeShake {
+    0% { transform: translate(-2px, 1px) rotate(-0.6deg); }
+    50% { transform: translate(2px, -1px) rotate(0.6deg); }
+    100% { transform: translate(-1px, 2px) rotate(-0.4deg); }
+}

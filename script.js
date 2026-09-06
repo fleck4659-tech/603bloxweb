@@ -29007,3 +29007,72 @@ window.azoraEggCharacterClick = azoraEggCharacterClick;
 window.azoraEggPlayClick = azoraEggPlayClick;
 window.openAzoraWireMap = openAzoraWireMap;
 window.closeAzoraWireMap = closeAzoraWireMap;
+
+/* ===== eqetech search easter egg ===== */
+var _eqetechBusy = false;
+
+function watchEqetechSearch(input) {
+    if (!input || _eqetechBusy) return;
+    var raw = String(input.value || "");
+    if (raw.toLowerCase().replace(/\s+/g, "") !== "eqetech") return;
+    startEqetechEgg(input);
+}
+
+function startEqetechEgg(input) {
+    if (_eqetechBusy) return;
+    _eqetechBusy = true;
+    var step = function () {
+        var v = String(input.value || "");
+        if (!v.length) {
+            playEqetechScene();
+            return;
+        }
+        input.value = v.slice(0, -1);
+        try { input.setSelectionRange(input.value.length, input.value.length); } catch (e) {}
+        setTimeout(step, 90);
+    };
+    setTimeout(step, 200);
+}
+
+function playEqetechScene() {
+    var ov = document.getElementById("eqetechOverlay");
+    var face = document.getElementById("eqetechFace");
+    var text = document.getElementById("eqetechText");
+    if (!ov) { _eqetechBusy = false; return; }
+    ov.style.display = "flex";
+    ov.className = "eqetech-overlay fadein happy";
+    ov.setAttribute("aria-hidden", "false");
+    if (text) text.textContent = "";
+    if (face) face.className = "eqetech-face happy";
+
+    setTimeout(function () { ov.classList.add("unhappy"); if (face) face.className = "eqetech-face unhappy"; }, 1600);
+    setTimeout(function () { ov.classList.add("no-shine"); }, 2600);
+    setTimeout(function () { ov.classList.add("long-mouth"); }, 3000);
+    setTimeout(function () { ov.classList.add("closer"); }, 3600);
+    setTimeout(function () {
+        var msg = "DON'T SAY THAT AGAIN";
+        var i = 0;
+        if (text) text.textContent = "";
+        var ty = setInterval(function () {
+            if (!text) { clearInterval(ty); return; }
+            text.textContent = msg.slice(0, ++i);
+            if (i >= msg.length) clearInterval(ty);
+        }, 70);
+    }, 4200);
+    setTimeout(function () { closeEqetechEgg(); }, 9000);
+}
+
+function closeEqetechEgg() {
+    var ov = document.getElementById("eqetechOverlay");
+    if (ov) {
+        ov.className = "eqetech-overlay";
+        ov.style.display = "none";
+        ov.setAttribute("aria-hidden", "true");
+    }
+    var text = document.getElementById("eqetechText");
+    if (text) text.textContent = "";
+    _eqetechBusy = false;
+}
+
+window.watchEqetechSearch = watchEqetechSearch;
+window.closeEqetechEgg = closeEqetechEgg;
