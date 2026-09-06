@@ -13,7 +13,7 @@
     <link rel="manifest" href="manifest-azora.json">
     <link rel="apple-touch-icon" href="logo.jpg?v=70.2">
     <link rel="icon" href="logo.jpg?v=70.2">
-    <link rel="stylesheet" href="style.css?v=72.9">
+    <link rel="stylesheet" href="style.css?v=72.11">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
@@ -225,12 +225,38 @@
             </div>
             <div class="settings-section">
                 <label class="settings-label">Theme</label>
+                <p class="settings-hint" style="margin-top:0;">Pick a look for Azora. Popups stay dark blue / black / purple with light text.</p>
                 <select id="themeSelect" onchange="changeTheme(this.value)" class="settings-input">
-                    <option value="auto">Automatic (Time-based)</option>
-                    <option value="light">Light Mode</option>
-                    <option value="dark">Dark Mode</option>
+                    <option value="auto">Automatic (day / night)</option>
+                    <option value="midnight">Midnight</option>
+                    <option value="void">Void</option>
+                    <option value="ocean">Ocean</option>
+                    <option value="cobalt">Cobalt</option>
+                    <option value="sapphire">Sapphire</option>
+                    <option value="storm">Storm</option>
+                    <option value="royal">Royal Purple</option>
+                    <option value="grape">Grape</option>
+                    <option value="amethyst">Amethyst</option>
+                    <option value="orchid">Orchid</option>
+                    <option value="nebula">Nebula</option>
+                    <option value="galaxy">Galaxy</option>
+                    <option value="aurora">Aurora</option>
+                    <option value="twilight">Twilight</option>
+                    <option value="indigo">Indigo</option>
+                    <option value="cyber">Cyber</option>
+                    <option value="ice">Ice Night</option>
+                    <option value="moonlight">Moonlight</option>
+                    <option value="slate">Slate</option>
+                    <option value="forest">Forest Night</option>
+                    <option value="mint">Mint Night</option>
+                    <option value="ember">Ember</option>
+                    <option value="sunset">Sunset</option>
+                    <option value="candy">Candy Night</option>
+                    <option value="blueberry">Blueberry</option>
+                    <option value="prism">Prism</option>
+                    <option value="lava">Lava Night</option>
                 </select>
-                <small class="settings-hint">Default: Automatic (bright during day, dark at night)</small>
+                <div class="theme-grid" id="themeGrid"></div>
             </div>
             
             <div class="settings-section" id="appUpdateSettingsSection">
@@ -1498,6 +1524,22 @@
 </div>
 
 
+<div id="unknownErrorOverlay" class="unknown-error-overlay" style="display:none;" aria-hidden="true">
+    <div class="unknown-error-sheet">
+        <div class="unknown-error-bar">
+            <span>UNKNOWN · PUBLISH REPORT</span>
+            <button type="button" class="unknown-error-close" onclick="closeUnknownErrorLayout()">Close</button>
+        </div>
+        <div class="unknown-error-body" id="unknownErrorBody"></div>
+        <p class="unknown-error-hint">Select any word for its definition.</p>
+    </div>
+    <div id="unknownWordPopup" class="unknown-word-popup" style="display:none;" role="dialog">
+        <strong id="unknownWordTitle"></strong>
+        <p id="unknownWordDef"></p>
+        <button type="button" onclick="closeUnknownWordPopup()">Close</button>
+    </div>
+</div>
+
 <div id="azoraVideosOverlay" class="azafn-overlay azora-videos-overlay" style="display:none;">
     <div class="azora-videos-shell">
         <header class="azora-videos-head">
@@ -1529,7 +1571,7 @@
 
 <!-- Optional: trained Aturius brain (export from Azora account → Settings → Export code files) -->
 <script src="aturius-training-pack.js"></script>
-<script src="script.js?v=72.29"></script>
+<script src="script.js?v=72.31"></script>
 <script src="political-earth-data.js?v=72.24"></script>
 <script src="political-earth-hd.js?v=72.24"></script>
 <script src="political-earth-hyper.js?v=72.26"></script>

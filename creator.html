@@ -1572,6 +1572,55 @@ function publishCurrentGame() {
     g.dimensions = "3D";
     saveCreatorGames(games);
 
+    var partCount = (g.parts && g.parts.length) ? g.parts.length : 0;
+    var failReason = "";
+    if (!author || author === "Unknown" || author === "Player" && !localStorage.getItem("azoraAccount")) {
+        // still allow Player if that's their name; only fail when we truly have no account
+    }
+    if (partCount < 1) failReason = "the world had no parts";
+    try {
+        if (JSON.stringify(g).length > 4000000) failReason = failReason || "the save was too large to store";
+    } catch (eSize) {
+        failReason = failReason || "the save could not be measured";
+    }
+
+    if (failReason) {
+        try {
+            var feedList = [];
+            try { feedList = JSON.parse(localStorage.getItem("azoraAzaFnGames") || "[]"); } catch (eR) { feedList = []; }
+            if (!Array.isArray(feedList)) feedList = [];
+            var sentence = author + "'s game was not published because " + failReason + ".";
+            feedList.unshift({
+                id: "unknown_err_" + Date.now(),
+                title: author + "'s game was not published",
+                description: sentence,
+                creator: "Unknown",
+                author: "Unknown",
+                by: "Unknown",
+                originalCreator: author,
+                errorUsername: author,
+                errorReason: failReason,
+                published: true,
+                unknownFallback: true,
+                gameKind: "unknown-error",
+                layout: "error-text",
+                dimensions: "Text",
+                world: "error-text",
+                createdAt: Date.now(),
+                likes: 0,
+                likedBy: [],
+                savedBy: [],
+                comments: [],
+                playConfig: { theme: "error-text", genre: "glossary", summary: "Interactive publish report" },
+                genre: "glossary"
+            });
+            localStorage.setItem("azoraAzaFnGames", JSON.stringify(feedList.slice(0, 120)));
+        } catch (eFeed) {}
+        alert("Publish did not finish correctly.\nUnknown posted an interactive error report to the live Feed.");
+        setStatus("Publish failed — Unknown posted a text report to Feed");
+        return;
+    }
+
     try {
         // Publish to Norm Games list (GAMES section) — never the TikTok-style Feed
         var normList = [];
@@ -1615,6 +1664,39 @@ function publishCurrentGame() {
         } catch (eP) {}
     } catch (e) {
         console.warn("publish norm write failed", e);
+        try {
+            if (typeof localStorage !== "undefined") {
+                var feedErr = [];
+                try { feedErr = JSON.parse(localStorage.getItem("azoraAzaFnGames") || "[]"); } catch (e2) { feedErr = []; }
+                if (!Array.isArray(feedErr)) feedErr = [];
+                var why = "a publish error stopped the upload";
+                feedErr.unshift({
+                    id: "unknown_err_" + Date.now(),
+                    title: author + "'s game was not published",
+                    description: author + "'s game was not published because " + why + ".",
+                    creator: "Unknown",
+                    author: "Unknown",
+                    by: "Unknown",
+                    originalCreator: author,
+                    errorUsername: author,
+                    errorReason: why,
+                    published: true,
+                    unknownFallback: true,
+                    gameKind: "unknown-error",
+                    layout: "error-text",
+                    dimensions: "Text",
+                    world: "error-text",
+                    createdAt: Date.now(),
+                    likes: 0, likedBy: [], savedBy: [], comments: [],
+                    playConfig: { theme: "error-text", genre: "glossary", summary: "Interactive publish report" },
+                    genre: "glossary"
+                });
+                localStorage.setItem("azoraAzaFnGames", JSON.stringify(feedErr.slice(0, 120)));
+            }
+        } catch (e3) {}
+        alert("Publish did not finish correctly.\nUnknown posted an interactive error report to the live Feed.");
+        setStatus("Publish failed — Unknown posted a text report to Feed");
+        return;
     }
 
     renderGamesList();

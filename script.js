@@ -6926,20 +6926,91 @@ function isNightTime() {
     return hour < 7 || hour >= 20; // 8 PM – 7 AM
 }
 
+var AZORA_THEME_PRESETS = {
+    midnight:  { bg1:"#020617", bg2:"#0f172a", bg3:"#1e3a8a", text1:"#f8fafc", text2:"#c7d2fe", accent:"#60a5fa", accent2:"#a78bfa", card:"rgba(15,23,42,0.88)", border:"#1d4ed8", top:"#020617", grad:"linear-gradient(90deg,#020617,#1e3a8a,#4c1d95)", pop:"#0b1224", foot:"#020617", ban:"rgba(59,130,246,0.22)" },
+    void:      { bg1:"#000000", bg2:"#020617", bg3:"#111827", text1:"#f8fafc", text2:"#cbd5e1", accent:"#818cf8", accent2:"#38bdf8", card:"rgba(2,6,23,0.92)", border:"#312e81", top:"#000000", grad:"linear-gradient(90deg,#000,#1e1b4b,#0f172a)", pop:"#050816", foot:"#000000", ban:"rgba(129,140,248,0.2)" },
+    ocean:     { bg1:"#082f49", bg2:"#0c4a6e", bg3:"#0369a1", text1:"#f0f9ff", text2:"#bae6fd", accent:"#38bdf8", accent2:"#818cf8", card:"rgba(8,47,73,0.88)", border:"#0284c7", top:"#0c4a6e", grad:"linear-gradient(90deg,#082f49,#0369a1,#1d4ed8)", pop:"#0b1f33", foot:"#082f49", ban:"rgba(56,189,248,0.22)" },
+    cobalt:    { bg1:"#1e3a8a", bg2:"#1d4ed8", bg3:"#2563eb", text1:"#eff6ff", text2:"#dbeafe", accent:"#93c5fd", accent2:"#c4b5fd", card:"rgba(30,58,138,0.88)", border:"#60a5fa", top:"#1e3a8a", grad:"linear-gradient(90deg,#1e3a8a,#2563eb,#4f46e5)", pop:"#102044", foot:"#172554", ban:"rgba(96,165,250,0.22)" },
+    sapphire:  { bg1:"#0b1b4a", bg2:"#1e40af", bg3:"#2563eb", text1:"#f8fafc", text2:"#bfdbfe", accent:"#60a5fa", accent2:"#a78bfa", card:"rgba(11,27,74,0.9)", border:"#3b82f6", top:"#0b1b4a", grad:"linear-gradient(90deg,#0b1b4a,#1e40af,#6d28d9)", pop:"#0a1640", foot:"#0b1b4a", ban:"rgba(59,130,246,0.22)" },
+    storm:     { bg1:"#0f172a", bg2:"#1e293b", bg3:"#334155", text1:"#f8fafc", text2:"#cbd5e1", accent:"#7dd3fc", accent2:"#a78bfa", card:"rgba(15,23,42,0.9)", border:"#475569", top:"#0f172a", grad:"linear-gradient(90deg,#0f172a,#334155,#1e3a8a)", pop:"#111827", foot:"#020617", ban:"rgba(125,211,252,0.18)" },
+    royal:     { bg1:"#3b0764", bg2:"#6b21a8", bg3:"#7c3aed", text1:"#faf5ff", text2:"#e9d5ff", accent:"#d8b4fe", accent2:"#93c5fd", card:"rgba(59,7,100,0.9)", border:"#a855f7", top:"#3b0764", grad:"linear-gradient(90deg,#3b0764,#6b21a8,#1d4ed8)", pop:"#1b0836", foot:"#2e1065", ban:"rgba(168,85,247,0.22)" },
+    grape:     { bg1:"#2e1065", bg2:"#5b21b6", bg3:"#7c3aed", text1:"#faf5ff", text2:"#ddd6fe", accent:"#c4b5fd", accent2:"#60a5fa", card:"rgba(46,16,101,0.9)", border:"#8b5cf6", top:"#2e1065", grad:"linear-gradient(90deg,#2e1065,#5b21b6,#2563eb)", pop:"#1a0b3b", foot:"#1e1b4b", ban:"rgba(139,92,246,0.22)" },
+    amethyst:  { bg1:"#4a044e", bg2:"#86198f", bg3:"#a21caf", text1:"#fdf4ff", text2:"#f5d0fe", accent:"#e879f9", accent2:"#818cf8", card:"rgba(74,4,78,0.9)", border:"#d946ef", top:"#4a044e", grad:"linear-gradient(90deg,#4a044e,#86198f,#1d4ed8)", pop:"#2a0630", foot:"#4a044e", ban:"rgba(232,121,249,0.2)" },
+    orchid:    { bg1:"#3b0764", bg2:"#9d174d", bg3:"#6d28d9", text1:"#fff1f2", text2:"#f5d0fe", accent:"#f0abfc", accent2:"#93c5fd", card:"rgba(59,7,100,0.9)", border:"#e879f9", top:"#3b0764", grad:"linear-gradient(90deg,#3b0764,#9d174d,#1e3a8a)", pop:"#22071f", foot:"#3b0764", ban:"rgba(240,171,252,0.2)" },
+    nebula:    { bg1:"#1e1b4b", bg2:"#4c1d95", bg3:"#1d4ed8", text1:"#f5f3ff", text2:"#ddd6fe", accent:"#a78bfa", accent2:"#38bdf8", card:"rgba(30,27,75,0.9)", border:"#818cf8", top:"#1e1b4b", grad:"linear-gradient(90deg,#1e1b4b,#4c1d95,#2563eb)", pop:"#14122f", foot:"#0f172a", ban:"rgba(167,139,250,0.22)" },
+    galaxy:    { bg1:"#020617", bg2:"#312e81", bg3:"#6d28d9", text1:"#f8fafc", text2:"#e9d5ff", accent:"#c4b5fd", accent2:"#38bdf8", card:"rgba(2,6,23,0.92)", border:"#6366f1", top:"#020617", grad:"linear-gradient(90deg,#020617,#312e81,#1d4ed8)", pop:"#070714", foot:"#000", ban:"rgba(99,102,241,0.22)" },
+    aurora:    { bg1:"#064e3b", bg2:"#1e3a8a", bg3:"#6d28d9", text1:"#f0fdfa", text2:"#c7d2fe", accent:"#34d399", accent2:"#60a5fa", card:"rgba(6,78,59,0.88)", border:"#22d3ee", top:"#0f172a", grad:"linear-gradient(90deg,#064e3b,#1e3a8a,#6d28d9)", pop:"#071824", foot:"#022c22", ban:"rgba(52,211,153,0.2)" },
+    twilight:  { bg1:"#1e1b4b", bg2:"#4c1d95", bg3:"#9a3412", text1:"#fff7ed", text2:"#e9d5ff", accent:"#fdba74", accent2:"#a78bfa", card:"rgba(30,27,75,0.9)", border:"#c084fc", top:"#1e1b4b", grad:"linear-gradient(90deg,#1e1b4b,#4c1d95,#9a3412)", pop:"#1a1028", foot:"#1e1b4b", ban:"rgba(253,186,116,0.18)" },
+    indigo:    { bg1:"#1e1b4b", bg2:"#3730a3", bg3:"#4338ca", text1:"#eef2ff", text2:"#c7d2fe", accent:"#a5b4fc", accent2:"#60a5fa", card:"rgba(30,27,75,0.9)", border:"#6366f1", top:"#1e1b4b", grad:"linear-gradient(90deg,#1e1b4b,#3730a3,#1d4ed8)", pop:"#15143a", foot:"#1e1b4b", ban:"rgba(99,102,241,0.22)" },
+    cyber:     { bg1:"#042f2e", bg2:"#155e75", bg3:"#1d4ed8", text1:"#ecfeff", text2:"#a5f3fc", accent:"#22d3ee", accent2:"#a78bfa", card:"rgba(4,47,46,0.9)", border:"#22d3ee", top:"#083344", grad:"linear-gradient(90deg,#042f2e,#155e75,#1d4ed8)", pop:"#062026", foot:"#042f2e", ban:"rgba(34,211,238,0.2)" },
+    ice:       { bg1:"#0f172a", bg2:"#164e63", bg3:"#0e7490", text1:"#f0f9ff", text2:"#bae6fd", accent:"#7dd3fc", accent2:"#c4b5fd", card:"rgba(15,23,42,0.9)", border:"#22d3ee", top:"#0f172a", grad:"linear-gradient(90deg,#0f172a,#164e63,#1d4ed8)", pop:"#0b1c28", foot:"#0f172a", ban:"rgba(125,211,252,0.2)" },
+    moonlight: { bg1:"#020617", bg2:"#1e293b", bg3:"#334155", text1:"#f8fafc", text2:"#e2e8f0", accent:"#cbd5e1", accent2:"#93c5fd", card:"rgba(2,6,23,0.92)", border:"#64748b", top:"#020617", grad:"linear-gradient(90deg,#020617,#1e293b,#312e81)", pop:"#0b1220", foot:"#020617", ban:"rgba(148,163,184,0.2)" },
+    slate:     { bg1:"#0f172a", bg2:"#1e293b", bg3:"#334155", text1:"#f8fafc", text2:"#cbd5e1", accent:"#94a3b8", accent2:"#818cf8", card:"rgba(15,23,42,0.92)", border:"#475569", top:"#0f172a", grad:"linear-gradient(90deg,#0f172a,#334155,#1e1b4b)", pop:"#111827", foot:"#020617", ban:"rgba(148,163,184,0.18)" },
+    forest:    { bg1:"#052e16", bg2:"#14532d", bg3:"#1e3a8a", text1:"#f0fdf4", text2:"#bbf7d0", accent:"#4ade80", accent2:"#60a5fa", card:"rgba(5,46,22,0.9)", border:"#16a34a", top:"#052e16", grad:"linear-gradient(90deg,#052e16,#14532d,#1e3a8a)", pop:"#071a12", foot:"#052e16", ban:"rgba(74,222,128,0.18)" },
+    mint:      { bg1:"#042f2e", bg2:"#134e4a", bg3:"#1d4ed8", text1:"#f0fdfa", text2:"#99f6e4", accent:"#2dd4bf", accent2:"#a78bfa", card:"rgba(4,47,46,0.9)", border:"#14b8a6", top:"#042f2e", grad:"linear-gradient(90deg,#042f2e,#134e4a,#3730a3)", pop:"#062422", foot:"#042f2e", ban:"rgba(45,212,191,0.18)" },
+    ember:     { bg1:"#1c1917", bg2:"#7c2d12", bg3:"#1e1b4b", text1:"#fff7ed", text2:"#fed7aa", accent:"#fb923c", accent2:"#a78bfa", card:"rgba(28,25,23,0.92)", border:"#ea580c", top:"#1c1917", grad:"linear-gradient(90deg,#1c1917,#7c2d12,#4c1d95)", pop:"#140e0c", foot:"#1c1917", ban:"rgba(251,146,60,0.18)" },
+    sunset:    { bg1:"#4c1d95", bg2:"#9a3412", bg3:"#1e3a8a", text1:"#fff7ed", text2:"#fed7aa", accent:"#fdba74", accent2:"#c4b5fd", card:"rgba(76,29,149,0.9)", border:"#f97316", top:"#4c1d95", grad:"linear-gradient(90deg,#4c1d95,#9a3412,#1e3a8a)", pop:"#1c1030", foot:"#2e1065", ban:"rgba(253,186,116,0.2)" },
+    candy:     { bg1:"#4a044e", bg2:"#9d174d", bg3:"#1e3a8a", text1:"#fff1f2", text2:"#fbcfe8", accent:"#f9a8d4", accent2:"#93c5fd", card:"rgba(74,4,78,0.9)", border:"#ec4899", top:"#4a044e", grad:"linear-gradient(90deg,#4a044e,#9d174d,#1d4ed8)", pop:"#2a0624", foot:"#4a044e", ban:"rgba(244,114,182,0.2)" },
+    blueberry: { bg1:"#172554", bg2:"#1e40af", bg3:"#4338ca", text1:"#eff6ff", text2:"#bfdbfe", accent:"#60a5fa", accent2:"#c4b5fd", card:"rgba(23,37,84,0.9)", border:"#3b82f6", top:"#172554", grad:"linear-gradient(90deg,#172554,#1e40af,#6d28d9)", pop:"#101b3c", foot:"#172554", ban:"rgba(59,130,246,0.22)" },
+    prism:     { bg1:"#1e1b4b", bg2:"#0e7490", bg3:"#7c3aed", text1:"#f8fafc", text2:"#e9d5ff", accent:"#22d3ee", accent2:"#f0abfc", card:"rgba(30,27,75,0.9)", border:"#22d3ee", top:"#1e1b4b", grad:"linear-gradient(90deg,#0e7490,#7c3aed,#1d4ed8)", pop:"#12142c", foot:"#0f172a", ban:"rgba(34,211,238,0.2)" },
+    lava:      { bg1:"#1c1917", bg2:"#7f1d1d", bg3:"#4c1d95", text1:"#fef2f2", text2:"#fecaca", accent:"#f87171", accent2:"#a78bfa", card:"rgba(28,25,23,0.92)", border:"#ef4444", top:"#1c1917", grad:"linear-gradient(90deg,#1c1917,#7f1d1d,#4c1d95)", pop:"#140808", foot:"#1c1917", ban:"rgba(248,113,113,0.18)" }
+};
+
+function resolveAzoraTheme(theme) {
+    if (theme === "light") return "ocean";
+    if (theme === "dark") return "midnight";
+    if (theme === "auto") return isNightTime() ? "midnight" : "ocean";
+    if (AZORA_THEME_PRESETS[theme]) return theme;
+    return "midnight";
+}
+
+function applyThemePreset(id) {
+    var t = AZORA_THEME_PRESETS[id];
+    if (!t) return;
+    var root = document.documentElement;
+    root.style.setProperty("--bg-1", t.bg1);
+    root.style.setProperty("--bg-2", t.bg2);
+    root.style.setProperty("--bg-3", t.bg3);
+    root.style.setProperty("--text-1", t.text1);
+    root.style.setProperty("--text-2", t.text2);
+    root.style.setProperty("--accent", t.accent);
+    root.style.setProperty("--accent-2", t.accent2);
+    root.style.setProperty("--card-bg", t.card);
+    root.style.setProperty("--card-border", t.border);
+    root.style.setProperty("--topbar", t.top);
+    root.style.setProperty("--topbar-grad", t.grad);
+    root.style.setProperty("--popup-bg", t.pop);
+    root.style.setProperty("--footer", t.foot);
+    root.style.setProperty("--banner", t.ban);
+}
+
+function paintThemeGrid(active) {
+    var grid = document.getElementById("themeGrid");
+    if (!grid) return;
+    var names = {
+        auto:"Auto", midnight:"Midnight", void:"Void", ocean:"Ocean", cobalt:"Cobalt",
+        sapphire:"Sapphire", storm:"Storm", royal:"Royal", grape:"Grape", amethyst:"Amethyst",
+        orchid:"Orchid", nebula:"Nebula", galaxy:"Galaxy", aurora:"Aurora", twilight:"Twilight",
+        indigo:"Indigo", cyber:"Cyber", ice:"Ice", moonlight:"Moonlight", slate:"Slate",
+        forest:"Forest", mint:"Mint", ember:"Ember", sunset:"Sunset", candy:"Candy",
+        blueberry:"Blueberry", prism:"Prism", lava:"Lava"
+    };
+    var ids = ["auto","midnight","void","ocean","cobalt","sapphire","storm","royal","grape","amethyst","orchid","nebula","galaxy","aurora","twilight","indigo","cyber","ice","moonlight","slate","forest","mint","ember","sunset","candy","blueberry","prism","lava"];
+    grid.innerHTML = ids.map(function (id) {
+        var prev = id === "auto" ? "linear-gradient(135deg,#1d4ed8,#6d28d9)" : (AZORA_THEME_PRESETS[id] ? AZORA_THEME_PRESETS[id].grad : "#1e3a8a");
+        return '<button type="button" class="theme-chip' + (active === id ? " on" : "") + '" data-theme-id="' + id + '" onclick="changeTheme(\'' + id + '\')"><i style="background:' + prev + '"></i><span>' + (names[id] || id) + "</span></button>";
+    }).join("");
+}
+
 function applyTheme(theme) {
-    let effective = theme;
-    if (theme === "auto") {
-        effective = isNightTime() ? "dark" : "light";
-    }
-    document.documentElement.setAttribute(
-        "data-theme",
-        effective === "dark" ? "dark" : "light"
-    );
+    theme = theme || "auto";
     localStorage.setItem("azoraTheme", theme);
-    // Rebuild full site palette from browser color for light/dark
-    if (typeof applyBrowserColor === "function") {
-        applyBrowserColor(localStorage.getItem("azoraBrowserColor") || "#1e60ff", true);
-    }
+    var effective = resolveAzoraTheme(theme);
+    document.documentElement.setAttribute("data-theme", effective);
+    applyThemePreset(effective);
+    var sel = document.getElementById("themeSelect");
+    if (sel) sel.value = theme;
+    paintThemeGrid(theme);
 }
 
 function changeTheme(value) {
@@ -7022,7 +7093,16 @@ function applyBrowserColor(hex, skipSave) {
     var color = normalizeHexColor(hex) || "#1e60ff";
     var rgb = hexToRgb(color);
     var root = document.documentElement;
-    var isDark = root.getAttribute("data-theme") === "dark";
+    var themeNow = root.getAttribute("data-theme") || "";
+    var isDark = themeNow !== "light";
+    var namedTheme = typeof AZORA_THEME_PRESETS !== "undefined" && AZORA_THEME_PRESETS[themeNow];
+    if (namedTheme) {
+        // Named themes already painted the site. Keep accent from the color picker only.
+        root.style.setProperty("--browser-color", color);
+        root.style.setProperty("--browser-color-rgb", rgb.r + ", " + rgb.g + ", " + rgb.b);
+        if (!skipSave) localStorage.setItem("azoraBrowserColor", color);
+        return;
+    }
 
     // Full shade ladder from the same hue
     var darker3 = shadeColor(color, -0.55); // very dark
@@ -7067,7 +7147,7 @@ function applyBrowserColor(hex, skipSave) {
         root.style.setProperty("--card-bg", "rgba(255, 255, 255, 0.22)");
         root.style.setProperty("--card-border", lighter3);
         root.style.setProperty("--banner", "rgba(" + rgb.r + ", " + rgb.g + ", " + rgb.b + ", 0.22)");
-        root.style.setProperty("--popup-bg", "rgba(255, 255, 255, 0.95)");
+        root.style.setProperty("--popup-bg", "#0b1224");
         root.style.setProperty("--text-1", "#ffffff");
         root.style.setProperty("--text-2", "#f0f7ff");
     }
@@ -7870,6 +7950,12 @@ function playAzoraGame(gameId) {
     loadAzaFnGames();
     var game = azaFnGames.find(function (g) { return g.id === gameId; });
     if (!game) { alert("Game not found."); return; }
+    if (typeof isUnknownErrorGame === "function" && isUnknownErrorGame(game)) {
+        if (typeof openUnknownErrorLayout === "function") {
+            openUnknownErrorLayout(game);
+            return;
+        }
+    }
     if (!game.playConfig || !game.playConfig.theme) { game.playConfig = buildPlayConfig(game.description || game.title || "", game.dimensions || "2D"); game.genre = game.playConfig.genre; saveAzaFnGames(); }
     startGamePlay(game);
 }
@@ -8357,6 +8443,7 @@ function loadAzaFnGames() {
     azaFnGames.forEach(function (g) {
         if (typeof g.published === "undefined") g.published = true;
     });
+    if (typeof migrateUnknownFallbackGames === "function") migrateUnknownFallbackGames();
 }
 function saveAzaFnGames() { localStorage.setItem("azoraAzaFnGames", JSON.stringify(azaFnGames)); }
 
@@ -15530,6 +15617,23 @@ function migrateStudioGamesOffFeed() {
 
 function registerStudioNormGames() {
     migrateStudioGamesOffFeed();
+    try {
+        var normFix = getPublishedStudioNormGames();
+        var kept = [];
+        var movedErr = false;
+        normFix.forEach(function (g) {
+            var empty = !g || !Array.isArray(g.parts) || g.parts.length < 1;
+            var who = String((g && (g.by || g.author || g.creator)) || "");
+            if (g && empty && (who === "Unknown" || g.unknownFallback)) {
+                movedErr = true;
+                if (typeof publishUnknownErrorFeedGame === "function") {
+                    publishUnknownErrorFeedGame(g.originalCreator || "Player", "the studio built a default empty room");
+                }
+            } else if (g) kept.push(g);
+        });
+        if (movedErr) localStorage.setItem("azoraPublishedNormGames", JSON.stringify(kept));
+    } catch (eN) {}
+
     var list = getPublishedStudioNormGames();
     list.forEach(function (g) {
         if (!g || !g.id) return;
@@ -28319,3 +28423,184 @@ window.loadNormCvbSettingsIntoUi = loadNormCvbSettingsIntoUi;
         try { if (typeof renderAturiusMessages === "function") renderAturiusMessages(); } catch (e) {}
     };
 })();
+
+/* ===== Unknown fallback: interactive text error layout on Feed ===== */
+var UNKNOWN_ERROR_DEFS = {
+    "unknown": "A system account used when Azora cannot attach a real creator to a failed publish.",
+    "game": "A playable place or activity on Azora that players can open from Feed or Norm Games.",
+    "was": "A past-tense verb meaning this already happened.",
+    "not": "A word that reverses the meaning. Here it means the publish did not succeed.",
+    "published": "Uploaded so other players can find and open it.",
+    "because": "Introduces the reason something happened.",
+    "reason": "The cause that explains why the publish failed.",
+    "error": "A problem that stopped the usual publish path.",
+    "failed": "Did not finish the way it was supposed to.",
+    "empty": "Contains no player-built parts.",
+    "world": "The 3D space built in Creator Studio.",
+    "parts": "Blocks and shapes placed on the studio grid.",
+    "missing": "Needed information was not found.",
+    "name": "The title that identifies the game.",
+    "account": "The signed-in player profile that owns the game.",
+    "creator": "The person who built the game in Creator Studio.",
+    "studio": "Creator Studio, the 3D building tool.",
+    "upload": "Sending the game data so Azora can list it.",
+    "store": "Saved data on this device.",
+    "large": "Too big for the save space that was available.",
+    "default": "A plain starter room used when no custom build is ready.",
+    "template": "A premade empty room layout.",
+    "room": "A simple enclosed space in a 3D game.",
+    "system": "Azora's automatic tools, not a real player.",
+    "layout": "How text and pages are arranged on screen.",
+    "interactive": "You can click or tap items to make something happen.",
+    "text": "Written words instead of a 3D map.",
+    "feed": "The live list of public games and posts.",
+    "invalid": "The value was not accepted.",
+    "username": "The public name of a player."
+};
+
+function unknownWordDefinition(word) {
+    var key = String(word || "").replace(/[^a-zA-Z0-9]+/g, "").toLowerCase();
+    if (!key) return "No word selected.";
+    if (UNKNOWN_ERROR_DEFS[key]) return UNKNOWN_ERROR_DEFS[key];
+    if (/^\d+$/.test(key)) return "A number used in this report.";
+    return "A word from this publish report. Azora shows it so you can study the message one word at a time.";
+}
+
+function isCriticalErrorWord(word) {
+    var key = String(word || "").replace(/[^a-zA-Z0-9]+/g, "").toLowerCase();
+    return ["not","published","because","error","failed","empty","missing","invalid","unknown","default","template"].indexOf(key) >= 0;
+}
+
+function buildUnknownErrorSentence(username, reason) {
+    username = String(username || "Player").trim() || "Player";
+    reason = String(reason || "a publish error stopped the upload").trim();
+    return username + "'s game was not published because " + reason + ".";
+}
+
+function isUnknownErrorGame(game) {
+    if (!game) return false;
+    if (game.gameKind === "unknown-error" || game.layout === "error-text" || game.unknownFallback) return true;
+    var who = String(game.creator || game.author || game.by || "");
+    if (who === "Unknown" && (!game.parts || !game.parts.length) && (game.playConfig && game.playConfig.theme === "default" || game.world === "studio" || !game.description)) return true;
+    return false;
+}
+
+function convertGameToUnknownError(game, reason) {
+    if (!game) return game;
+    var username = game.errorUsername || game.intendedCreator || game.originalCreator || game.creator || game.by || "Player";
+    if (username === "Unknown") username = game.originalCreator || "Player";
+    var why = reason || game.errorReason || "the studio built a default empty room";
+    var sentence = buildUnknownErrorSentence(username, why);
+    game.unknownFallback = true;
+    game.gameKind = "unknown-error";
+    game.layout = "error-text";
+    game.creator = "Unknown";
+    game.author = "Unknown";
+    game.by = "Unknown";
+    game.published = true;
+    game.dimensions = "Text";
+    game.world = "error-text";
+    game.errorUsername = username;
+    game.errorReason = why;
+    game.title = username + "'s game was not published";
+    game.description = sentence;
+    game.parts = [];
+    game.playConfig = { theme: "error-text", genre: "glossary", summary: "Interactive publish report" };
+    game.genre = "glossary";
+    return game;
+}
+
+function migrateUnknownFallbackGames() {
+    var changed = false;
+    (azaFnGames || []).forEach(function (g) {
+        if (!g) return;
+        var who = String(g.creator || g.author || g.by || "");
+        var emptyStudio = (!g.parts || !g.parts.length) && (g.world === "studio" || g.gameKind === "norm" || (g.playConfig && g.playConfig.theme === "default"));
+        if (g.unknownFallback || g.gameKind === "unknown-error" || g.layout === "error-text") {
+            if (!g.description || !(g.playConfig && g.playConfig.theme === "error-text")) {
+                convertGameToUnknownError(g, g.errorReason);
+                changed = true;
+            }
+            return;
+        }
+        if (who === "Unknown" && emptyStudio) {
+            convertGameToUnknownError(g, "the studio built a default empty room");
+            changed = true;
+        }
+    });
+    if (changed) {
+        try { saveAzaFnGames(); } catch (e) {}
+    }
+}
+
+function publishUnknownErrorFeedGame(username, reason) {
+    loadAzaFnGames();
+    var sentence = buildUnknownErrorSentence(username, reason);
+    var game = convertGameToUnknownError({
+        id: "unknown_err_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+        createdAt: Date.now(),
+        likes: 0,
+        likedBy: [],
+        savedBy: [],
+        comments: [],
+        originalCreator: username
+    }, reason);
+    game.description = sentence;
+    azaFnGames.unshift(game);
+    saveAzaFnGames();
+    try { if (typeof renderPublicFeed === "function") renderPublicFeed(); } catch (e) {}
+    try { if (typeof renderAzaFnFeed === "function") renderAzaFnFeed(); } catch (e2) {}
+    return game;
+}
+
+function openUnknownErrorLayout(game) {
+    var ov = document.getElementById("unknownErrorOverlay");
+    var body = document.getElementById("unknownErrorBody");
+    if (!ov || !body) return;
+    game = convertGameToUnknownError(game || {}, (game && game.errorReason) || "a publish error stopped the upload");
+    var sentence = game.description || buildUnknownErrorSentence(game.errorUsername, game.errorReason);
+    var words = sentence.split(/(\s+)/);
+    var uname = String(game.errorUsername || "").replace(/[^a-zA-Z0-9]+/g, "").toLowerCase();
+    body.innerHTML = words.map(function (w) {
+        if (/^\s+$/.test(w) || !w) return w;
+        var raw = String(w).replace(/[^a-zA-Z0-9]+/g, "").toLowerCase();
+        var cls = "unknown-word" + (isCriticalErrorWord(w) || (uname && raw === uname) ? " crit" : "");
+        return '<button type="button" class="' + cls + '" onclick="showUnknownWordPopup(this)">' + String(w).replace(/</g, "&lt;") + "</button>";
+    }).join("");
+    ov.style.display = "flex";
+    ov.setAttribute("aria-hidden", "false");
+    closeUnknownWordPopup();
+}
+
+function closeUnknownErrorLayout() {
+    var ov = document.getElementById("unknownErrorOverlay");
+    if (ov) {
+        ov.style.display = "none";
+        ov.setAttribute("aria-hidden", "true");
+    }
+    closeUnknownWordPopup();
+}
+
+function showUnknownWordPopup(btn) {
+    var word = (btn && btn.textContent) ? btn.textContent.trim() : "";
+    var pop = document.getElementById("unknownWordPopup");
+    var title = document.getElementById("unknownWordTitle");
+    var def = document.getElementById("unknownWordDef");
+    if (!pop) return;
+    if (title) title.textContent = word.replace(/[.,]/g, "");
+    if (def) def.textContent = unknownWordDefinition(word);
+    pop.style.display = "block";
+}
+
+function closeUnknownWordPopup() {
+    var pop = document.getElementById("unknownWordPopup");
+    if (pop) pop.style.display = "none";
+}
+
+window.isUnknownErrorGame = isUnknownErrorGame;
+window.publishUnknownErrorFeedGame = publishUnknownErrorFeedGame;
+window.openUnknownErrorLayout = openUnknownErrorLayout;
+window.closeUnknownErrorLayout = closeUnknownErrorLayout;
+window.showUnknownWordPopup = showUnknownWordPopup;
+window.closeUnknownWordPopup = closeUnknownWordPopup;
+window.migrateUnknownFallbackGames = migrateUnknownFallbackGames;
