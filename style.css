@@ -7421,3 +7421,14 @@ html[data-theme="dark"] .azora-bg-wave { background: transparent; }
 }
 .azora-emoji-face { font-size: 20px; width: 28px; text-align: center; }
 .azora-emoji-code { font-size: 12px; color: #c7d2fe; }
+
+img.azora-cemoji {
+    width: 22px;
+    height: 22px;
+    vertical-align: -5px;
+    display: inline-block;
+    border-radius: 5px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+.azora-emoji-name { font-size: 10px; color: #93c5fd; margin-left: auto; }
