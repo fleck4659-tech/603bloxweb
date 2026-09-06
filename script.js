@@ -7566,6 +7566,19 @@ function dismissIntroSplash(openAccount) {
 }
 
 window.addEventListener("DOMContentLoaded", function () {
+    setTimeout(function () {
+        try {
+            var splash = document.getElementById("introSplash");
+            if (splash && splash.style.display !== "none") forceHideIntroSplash();
+            var load = document.getElementById("azoraLoadingScreen");
+            if (load && load.classList.contains("show") && load.dataset.stuck !== "1") {
+                /* if still up after 8s and online, let the user in */
+                if (typeof azoraHasInternet !== "function" || azoraHasInternet()) {
+                    if (typeof hideAzoraLoadingScreen === "function") hideAzoraLoadingScreen();
+                }
+            }
+        } catch (e) {}
+    }, 8000);
     var splash = document.getElementById("introSplash");
     var loggedIn = localStorage.getItem("loggedIn");
 
@@ -29148,7 +29161,10 @@ function startEqetechEgg(input) {
         try { input.setSelectionRange(input.value.length, input.value.length); } catch (e) {}
         setTimeout(step, 90);
     };
-    setTfunction drawEqetechAturius(state) {
+    setTimeout(step, 200);
+}
+
+function drawEqetechAturius(state) {
     var canvas = document.getElementById("eqetechCanvas");
     if (!canvas) return;
     var ctx = canvas.getContext("2d");
@@ -29253,9 +29269,6 @@ function playEqetechScene() {
         }, 70);
     }, 4200);
     setTimeout(function () { closeEqetechEgg(); }, 9000);
-}
-
-chEgg(); }, 9000);
 }
 
 function closeEqetechEgg() {
