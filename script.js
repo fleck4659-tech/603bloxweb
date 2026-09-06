@@ -7946,6 +7946,14 @@ function buildPlayConfig(description, dimensions) {
 }
 var _play = { running: false, raf: null, keys: {}, game: null, cfg: null, score: 0, won: false, lost: false, entities: [], player: null, canvas: null, ctx: null, renderer: null, scene: null, camera: null, meshPlayer: null, collectMeshes: [], _last: 0 };
 function playCurrentPreview() { if (currentPreviewGameId) playAzoraGame(currentPreviewGameId); }
+function feedGameKindLabel(game) {
+    if (!game) return "Game";
+    if (typeof isUnknownErrorGame === "function" && isUnknownErrorGame(game)) return "Interactive Game";
+    var d = String(game.dimensions || "").trim();
+    if (!d || /^text$/i.test(d)) return "Interactive Game";
+    return d;
+}
+
 function playAzoraGame(gameId) {
     loadAzaFnGames();
     var game = azaFnGames.find(function (g) { return g.id === gameId; });
@@ -8570,7 +8578,7 @@ function renderAzaFnFeed() {
             '<div class="game-card-header"><div class="game-card-avatar">' + initial + '</div>' +
             '<div class="game-card-meta"><strong>' + escapeHtml(game.creator) + '</strong><span>' + timeStr + '</span></div></div>' +
             '<div class="game-card-title">' + escapeHtml(game.title) + '</div>' +
-            '<div class="game-card-dims">' + escapeHtml(game.dimensions) + '</div>' +
+            '<div class="game-card-dims">' + escapeHtml(feedGameKindLabel(game)) + '</div>' +
             '<div class="game-card-desc">' + escapeHtml(game.description) + '</div>' +
             '<div class="game-card-actions">' +
             '<button class="game-action-btn' + (liked?' liked':'') + '" onclick="azaFnLike(\'' + game.id + '\')">' + (liked?'❤️ ':'🤍 ') + (game.likes||0) + '</button>' +
@@ -8762,7 +8770,7 @@ function renderPublicFeed() {
                 '<div class="game-card-meta"><strong>' + escapeHtml(game.creator || "Player") + '</strong><span>' + timeStr + '</span></div>' +
             '</div>' +
             '<div class="game-card-title">' + escapeHtml(game.title) + '</div>' +
-            '<div class="game-card-dims">' + escapeHtml(game.dimensions) + '</div>' +
+            '<div class="game-card-dims">' + escapeHtml(feedGameKindLabel(game)) + '</div>' +
             '<div class="game-card-desc">' + escapeHtml(game.description) + '</div>' +
             '<div class="game-card-actions">' +
                 likeBtn +
@@ -28498,7 +28506,7 @@ function convertGameToUnknownError(game, reason) {
     game.author = "Unknown";
     game.by = "Unknown";
     game.published = true;
-    game.dimensions = "Text";
+    game.dimensions = "Interactive Game";
     game.world = "error-text";
     game.errorUsername = username;
     game.errorReason = why;
