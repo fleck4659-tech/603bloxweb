@@ -7581,3 +7581,42 @@ img.azora-cemoji {
     50% { transform: translate(2px, -1px) rotate(0.6deg); }
     100% { transform: translate(-1px, 2px) rotate(-0.4deg); }
 }
+
+.old-azora-theme-btn {
+    width: 100%;
+    margin-top: 8px;
+    background: linear-gradient(90deg, #00bfff, #0077ff) !important;
+    color: #fff !important;
+    border: 1px solid #00bfff !important;
+    box-shadow: 0 0 16px rgba(0,191,255,0.35);
+}
+html[data-theme="classic603"] body {
+    background: #0d1117 !important;
+}
+html[data-theme="classic603"] .topbar-shell,
+html[data-theme="classic603"] .topbar {
+    background: #0f172a !important;
+    border-bottom-color: #00bfff !important;
+}
+html[data-theme="classic603"] .topbar h2 { color: #00bfff !important; }
+html[data-theme="classic603"] h1 { color: #00bfff !important; }
+html[data-theme="classic603"] button {
+    background: linear-gradient(90deg, #00bfff, #0077ff) !important;
+    color: #fff !important;
+    box-shadow: none;
+}
+html[data-theme="classic603"] button:hover {
+    background: linear-gradient(90deg, #0099ff, #0055ff) !important;
+    box-shadow: 0 0 16px #00bfff;
+}
+html[data-theme="classic603"] .news-card,
+html[data-theme="classic603"] .avatar-customizer-container {
+    background: #111827 !important;
+    border-color: #00bfff !important;
+}
+html[data-theme="classic603"] .logo { border-radius: 50%; }
+html[data-theme="classic603"] footer { background: #0d1117 !important; color: #888 !important; }
+html[data-theme="classic603"] .overlay .popup {
+    background: #0d1117 !important;
+    border-color: #00bfff !important;
+}

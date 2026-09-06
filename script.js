@@ -6953,7 +6953,8 @@ var AZORA_THEME_PRESETS = {
     candy:     { bg1:"#4a044e", bg2:"#9d174d", bg3:"#1e3a8a", text1:"#fff1f2", text2:"#fbcfe8", accent:"#f9a8d4", accent2:"#93c5fd", card:"rgba(74,4,78,0.9)", border:"#ec4899", top:"#4a044e", grad:"linear-gradient(90deg,#4a044e,#9d174d,#1d4ed8)", pop:"#2a0624", foot:"#4a044e", ban:"rgba(244,114,182,0.2)" },
     blueberry: { bg1:"#172554", bg2:"#1e40af", bg3:"#4338ca", text1:"#eff6ff", text2:"#bfdbfe", accent:"#60a5fa", accent2:"#c4b5fd", card:"rgba(23,37,84,0.9)", border:"#3b82f6", top:"#172554", grad:"linear-gradient(90deg,#172554,#1e40af,#6d28d9)", pop:"#101b3c", foot:"#172554", ban:"rgba(59,130,246,0.22)" },
     prism:     { bg1:"#1e1b4b", bg2:"#0e7490", bg3:"#7c3aed", text1:"#f8fafc", text2:"#e9d5ff", accent:"#22d3ee", accent2:"#f0abfc", card:"rgba(30,27,75,0.9)", border:"#22d3ee", top:"#1e1b4b", grad:"linear-gradient(90deg,#0e7490,#7c3aed,#1d4ed8)", pop:"#12142c", foot:"#0f172a", ban:"rgba(34,211,238,0.2)" },
-    lava:      { bg1:"#1c1917", bg2:"#7f1d1d", bg3:"#4c1d95", text1:"#fef2f2", text2:"#fecaca", accent:"#f87171", accent2:"#a78bfa", card:"rgba(28,25,23,0.92)", border:"#ef4444", top:"#1c1917", grad:"linear-gradient(90deg,#1c1917,#7f1d1d,#4c1d95)", pop:"#140808", foot:"#1c1917", ban:"rgba(248,113,113,0.18)" }
+    lava:      { bg1:"#1c1917", bg2:"#7f1d1d", bg3:"#4c1d95", text1:"#fef2f2", text2:"#fecaca", accent:"#f87171", accent2:"#a78bfa", card:"rgba(28,25,23,0.92)", border:"#ef4444", top:"#1c1917", grad:"linear-gradient(90deg,#1c1917,#7f1d1d,#4c1d95)", pop:"#140808", foot:"#1c1917", ban:"rgba(248,113,113,0.18)" },
+    classic603:{ bg1:"#0d1117", bg2:"#0f172a", bg3:"#111827", text1:"#ffffff", text2:"#d0d0d0", accent:"#00bfff", accent2:"#0077ff", card:"#111827", border:"#00bfff", top:"#0f172a", grad:"linear-gradient(90deg,#00bfff,#0077ff)", pop:"#0d1117", foot:"#0d1117", ban:"rgba(0,191,255,0.16)" }
 };
 
 function resolveAzoraTheme(theme) {
@@ -6984,6 +6985,72 @@ function applyThemePreset(id) {
     root.style.setProperty("--banner", t.ban);
 }
 
+function _hexToRgb(hex) {
+    hex = String(hex || "").replace("#", "");
+    if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+    if (hex.length !== 6) return null;
+    return [parseInt(hex.slice(0,2),16), parseInt(hex.slice(2,4),16), parseInt(hex.slice(4,6),16)];
+}
+function _mixHex(a, b, t) {
+    var A = _hexToRgb(a), B = _hexToRgb(b);
+    if (!A || !B) return b;
+    var m = function (i) { return Math.round(A[i] + (B[i] - A[i]) * t); };
+    return "#" + [m(0),m(1),m(2)].map(function (n) { return ("0" + n.toString(16)).slice(-2); }).join("");
+}
+
+var _themeMorphTimer = null;
+function morphThemePreset(id, ms) {
+    var to = AZORA_THEME_PRESETS[id];
+    if (!to) return applyThemePreset(id);
+    var root = document.documentElement;
+    var from = {
+        bg1: getComputedStyle(root).getPropertyValue("--bg-1").trim() || "#1e1b4b",
+        bg2: getComputedStyle(root).getPropertyValue("--bg-2").trim() || "#4c1d95",
+        bg3: getComputedStyle(root).getPropertyValue("--bg-3").trim() || "#2563eb",
+        text1: getComputedStyle(root).getPropertyValue("--text-1").trim() || "#ffffff",
+        text2: getComputedStyle(root).getPropertyValue("--text-2").trim() || "#e2e8f0",
+        accent: getComputedStyle(root).getPropertyValue("--accent").trim() || "#00bfff",
+        accent2: getComputedStyle(root).getPropertyValue("--accent-2").trim() || "#0077ff",
+        border: getComputedStyle(root).getPropertyValue("--card-border").trim() || "#00bfff",
+        top: getComputedStyle(root).getPropertyValue("--topbar").trim() || "#0f172a",
+        pop: getComputedStyle(root).getPropertyValue("--popup-bg").trim() || "#0d1117",
+        foot: getComputedStyle(root).getPropertyValue("--footer").trim() || "#0d1117"
+    };
+    var start = Date.now();
+    if (_themeMorphTimer) cancelAnimationFrame(_themeMorphTimer);
+    function step() {
+        var p = Math.min(1, (Date.now() - start) / (ms || 2400));
+        var e = p < 0.5 ? 2*p*p : 1 - Math.pow(-2*p+2,2)/2;
+        root.style.setProperty("--bg-1", _mixHex(from.bg1, to.bg1, e));
+        root.style.setProperty("--bg-2", _mixHex(from.bg2, to.bg2, e));
+        root.style.setProperty("--bg-3", _mixHex(from.bg3, to.bg3, e));
+        root.style.setProperty("--text-1", _mixHex(from.text1, to.text1, e));
+        root.style.setProperty("--text-2", _mixHex(from.text2, to.text2, e));
+        root.style.setProperty("--accent", _mixHex(from.accent, to.accent, e));
+        root.style.setProperty("--accent-2", _mixHex(from.accent2, to.accent2, e));
+        root.style.setProperty("--card-border", _mixHex(from.border, to.border, e));
+        root.style.setProperty("--topbar", _mixHex(from.top, to.top, e));
+        root.style.setProperty("--popup-bg", _mixHex(from.pop, to.pop, e));
+        root.style.setProperty("--footer", _mixHex(from.foot, to.foot, e));
+        root.style.setProperty("--topbar-grad", to.grad);
+        root.style.setProperty("--card-bg", to.card);
+        root.style.setProperty("--banner", to.ban);
+        if (p < 1) _themeMorphTimer = requestAnimationFrame(step);
+        else applyThemePreset(id);
+    }
+    _themeMorphTimer = requestAnimationFrame(step);
+}
+
+function applyOldAzoraTheme() {
+    var status = document.getElementById("oldAzoraThemeStatus");
+    if (status) status.textContent = "Turning Azora toward the old 603blox Web look…";
+    applyTheme("classic603", { morph: true, ms: 2600 });
+    setTimeout(function () {
+        if (status) status.textContent = "Theme on. This is still Azora — only the colors changed.";
+    }, 2700);
+}
+window.applyOldAzoraTheme = applyOldAzoraTheme;
+
 function paintThemeGrid(active) {
     var grid = document.getElementById("themeGrid");
     if (!grid) return;
@@ -6993,21 +7060,26 @@ function paintThemeGrid(active) {
         orchid:"Orchid", nebula:"Nebula", galaxy:"Galaxy", aurora:"Aurora", twilight:"Twilight",
         indigo:"Indigo", cyber:"Cyber", ice:"Ice", moonlight:"Moonlight", slate:"Slate",
         forest:"Forest", mint:"Mint", ember:"Ember", sunset:"Sunset", candy:"Candy",
-        blueberry:"Blueberry", prism:"Prism", lava:"Lava"
+        blueberry:"Blueberry", prism:"Prism", lava:"Lava", classic603:"Old Azora (603blox Web)"
     };
-    var ids = ["auto","midnight","void","ocean","cobalt","sapphire","storm","royal","grape","amethyst","orchid","nebula","galaxy","aurora","twilight","indigo","cyber","ice","moonlight","slate","forest","mint","ember","sunset","candy","blueberry","prism","lava"];
-    grid.innerHTML = ids.map(function (id) {
+    var ids = ["auto","midnight","void","ocean","cobalt","sapphire","storm","royal","grape","amethyst","orchid","nebula","galaxy","aurora","twilight","indigo","cyber","ice","moonlight","slate","forest","mint","ember","sunset","candy","blueberry","prism","lava","classic603"];
+    var html = ids.map(function (id) {
         var prev = id === "auto" ? "linear-gradient(135deg,#1d4ed8,#6d28d9)" : (AZORA_THEME_PRESETS[id] ? AZORA_THEME_PRESETS[id].grad : "#1e3a8a");
-        return '<button type="button" class="theme-chip' + (active === id ? " on" : "") + '" data-theme-id="' + id + '" onclick="changeTheme(\'' + id + '\')"><i style="background:' + prev + '"></i><span>' + (names[id] || id) + "</span></button>";
+        var slow = id === "classic603" ? "applyOldAzoraTheme()" : ("changeTheme('" + id + "')");
+        return '<button type="button" class="theme-chip' + (active === id ? " on" : "") + '" data-theme-id="' + id + '" onclick="' + slow + '"><i style="background:' + prev + '"></i><span>' + (names[id] || id) + "</span></button>";
     }).join("");
+    grid.innerHTML = html;
+    var grid2 = document.getElementById("themeGridThemes");
+    if (grid2) grid2.innerHTML = html;
 }
 
-function applyTheme(theme) {
+function applyTheme(theme, opts) {
     theme = theme || "auto";
     localStorage.setItem("azoraTheme", theme);
     var effective = resolveAzoraTheme(theme);
     document.documentElement.setAttribute("data-theme", effective);
-    applyThemePreset(effective);
+    if (opts && opts.morph) morphThemePreset(effective, opts.ms || 2400);
+    else applyThemePreset(effective);
     var sel = document.getElementById("themeSelect");
     if (sel) sel.value = theme;
     paintThemeGrid(theme);
@@ -14934,9 +15006,11 @@ setTimeout(function () {
 
 function switchSettingsTab(tab) {
     var basic = document.getElementById("settingsPanelBasic");
+    var themes = document.getElementById("settingsPanelThemes");
     var security = document.getElementById("settingsPanelSecurity");
     var accounts = document.getElementById("settingsPanelAccounts");
     var tabBasic = document.getElementById("settingsTabBasic");
+    var tabThemes = document.getElementById("settingsTabThemes");
     var tabSecurity = document.getElementById("settingsTabSecurity");
     var tabAccounts = document.getElementById("settingsTabAccounts");
     if (!basic || !security) return;
@@ -14948,11 +15022,20 @@ function switchSettingsTab(tab) {
     }
 
     if (basic) basic.style.display = "none";
+    if (themes) themes.style.display = "none";
     if (security) security.style.display = "none";
     if (accounts) accounts.style.display = "none";
     if (tabBasic) tabBasic.classList.remove("active");
+    if (tabThemes) tabThemes.classList.remove("active");
     if (tabSecurity) tabSecurity.classList.remove("active");
     if (tabAccounts) tabAccounts.classList.remove("active");
+
+    if (tab === "themes") {
+        if (themes) themes.style.display = "block";
+        if (tabThemes) tabThemes.classList.add("active");
+        try { paintThemeGrid(localStorage.getItem("azoraTheme") || "auto"); } catch (eT) {}
+        return;
+    }
 
     if (tab === "security") {
         if (security) security.style.display = "block";
