@@ -7565,7 +7565,8 @@ img.azora-cemoji {
 }
 .eqetech-overlay.fadein { background: #000; }
 .eqetech-face { position: relative; transform: scale(0.92); }
-#eqetechCanvas { width: min(62vw, 420px); height: min(62vw, 420px); display: block; }
+#eqetechCanvas { width: min(70vw, 460px); height: min(70vw, 460px); display: block; background: transparent; border-radius: 50%; }
+.eqetech-face { background: none; overflow: visible; }
 .eqetech-text {
     margin-top: 18px;
     min-height: 32px;

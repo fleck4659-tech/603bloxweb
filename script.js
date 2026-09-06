@@ -29176,11 +29176,11 @@ function paintEqetechFace(tex, state) {
     var shine = 1 - (state.noShine || 0);
     var longM = state.longMouth || 0;
     var lx = w * 0.36, rx = w * 0.64, eyeY = h * 0.40;
-    var eyeRx = w * 0.072, eyeRy = h * 0.082;
-    function eye(ex, tilt) {
+    var eyeRx = w * 0.072 * (1 + unhappy * 0.18), eyeRy = h * 0.082 * (1 + unhappy * 0.08);
+    function eye(ex) {
         ctx.fillStyle = "#111111";
         ctx.beginPath();
-        ctx.ellipse(ex, eyeY + unhappy * h * 0.008, eyeRx * (1 - unhappy * 0.12), eyeRy, tilt || 0, 0, Math.PI * 2);
+        ctx.ellipse(ex, eyeY, eyeRx, eyeRy, 0, 0, Math.PI * 2);
         ctx.fill();
         if (shine > 0.04) {
             ctx.fillStyle = "rgba(255,255,255," + (0.55 * shine) + ")";
@@ -29189,21 +29189,8 @@ function paintEqetechFace(tex, state) {
             ctx.fill();
         }
     }
-    if (unhappy > 0.45) {
-        eye(lx, 0.32);
-        eye(rx, -0.32);
-        ctx.strokeStyle = "#111111";
-        ctx.lineWidth = Math.max(5, w * 0.028);
-        ctx.beginPath();
-        ctx.moveTo(lx - eyeRx, eyeY - eyeRy * 1.15);
-        ctx.lineTo(lx + eyeRx * 0.55, eyeY - eyeRy * 0.45);
-        ctx.moveTo(rx + eyeRx, eyeY - eyeRy * 1.15);
-        ctx.lineTo(rx - eyeRx * 0.55, eyeY - eyeRy * 0.45);
-        ctx.stroke();
-    } else {
-        eye(lx, 0);
-        eye(rx, 0);
-    }
+    eye(lx);
+    eye(rx);
     var mouthY = h * 0.60;
     ctx.fillStyle = "#111111";
     ctx.strokeStyle = "#111111";
@@ -29211,19 +29198,14 @@ function paintEqetechFace(tex, state) {
     ctx.lineJoin = "round";
     if (longM > 0.08) {
         ctx.beginPath();
-        ctx.ellipse(w * 0.5, mouthY + h * 0.02 + longM * h * 0.08, w * (0.08 + longM * 0.04), h * (0.05 + longM * 0.14), 0, 0, Math.PI * 2);
+        ctx.ellipse(w * 0.5, mouthY + h * 0.03 + longM * h * 0.1, w * (0.07 + longM * 0.03), h * (0.045 + longM * 0.16), 0, 0, Math.PI * 2);
         ctx.fill();
-    } else if (unhappy < 0.5) {
+    } else {
         ctx.lineWidth = Math.max(12, w * 0.06);
+        var dip = h * 0.16 * (1 - unhappy * 0.85);
         ctx.beginPath();
         ctx.moveTo(w * 0.28, mouthY);
-        ctx.quadraticCurveTo(w * 0.5, mouthY + h * 0.16 * (1 - unhappy * 1.4), w * 0.72, mouthY);
-        ctx.stroke();
-    } else {
-        ctx.lineWidth = Math.max(10, w * 0.055);
-        ctx.beginPath();
-        ctx.moveTo(w * 0.30, mouthY + h * 0.08);
-        ctx.quadraticCurveTo(w * 0.5, mouthY - h * 0.08, w * 0.70, mouthY + h * 0.08);
+        ctx.quadraticCurveTo(w * 0.5, mouthY + Math.max(h * 0.02, dip), w * 0.72, mouthY);
         ctx.stroke();
     }
     tex.needsUpdate = true;
@@ -29266,12 +29248,15 @@ function initEqetechAturius3D() {
     faceTex.minFilter = THREE.LinearFilter;
     faceTex.magFilter = THREE.LinearFilter;
     var faceMesh = new THREE.Mesh(
-        new THREE.PlaneGeometry(1.35, 1.35),
-        new THREE.MeshBasicMaterial({ map: faceTex, transparent: true, depthTest: true, depthWrite: false, side: THREE.DoubleSide })
+        new THREE.PlaneGeometry(1.05, 1.05),
+        new THREE.MeshBasicMaterial({ map: faceTex, transparent: true, depthTest: true, depthWrite: false, alphaTest: 0.08, side: THREE.DoubleSide })
     );
-    faceMesh.position.set(0, 0.05, 1.25);
-    scene.add(faceMesh);
-    _eqe3d = { renderer: renderer, scene: scene, camera: camera, sphere: sphere, faceMesh: faceMesh, faceTex: faceTex, key: key, amb: amb };
+    faceMesh.position.set(0, 0.04, 0.97);
+    var rig = new THREE.Group();
+    rig.add(sphere);
+    rig.add(faceMesh);
+    scene.add(rig);
+    _eqe3d = { renderer: renderer, scene: scene, camera: camera, sphere: sphere, faceMesh: faceMesh, faceTex: faceTex, key: key, amb: amb, rig: rig };
     return _eqe3d;
 }
 
@@ -29302,19 +29287,19 @@ function playEqetechScene() {
         state.longMouth = Math.min(1, Math.max(0, (t - 3000) / 900));
         state.closer = Math.min(1, Math.max(0, (t - 3600) / 800));
         if (world && world.camera) {
-            world.camera.position.z = 3.4 - state.closer * 1.55;
-            world.camera.position.x = Math.sin(t / 90) * state.closer * 0.04;
-            world.camera.position.y = Math.cos(t / 80) * state.closer * 0.03;
-            world.camera.lookAt(0, -0.08 * state.closer, 0);
-            if (world.key) world.key.intensity = 1.1 - state.unhappy * 0.55;
-            if (world.amb) world.amb.intensity = 0.65 - state.unhappy * 0.28;
+            world.camera.position.set(0, 0, 3.4);
+            world.camera.lookAt(0, 0, 0);
+            if (world.rig) world.rig.scale.setScalar(1 + state.closer * 0.42);
+            if (world.rig) world.rig.position.y = -0.04 * state.closer;
+            if (world.key) world.key.intensity = 1.1 - state.unhappy * 0.62;
+            if (world.amb) world.amb.intensity = 0.65 - state.unhappy * 0.34;
             if (world.sphere && world.sphere.material) {
-                world.sphere.material.color.setRGB(1, 0.8 - state.unhappy * 0.12, 0.05);
+                world.sphere.material.color.setRGB(1, 0.8 - state.unhappy * 0.08, 0.05);
             }
             paintEqetechFace(world.faceTex, state);
             try { world.renderer.render(world.scene, world.camera); } catch (e) {}
         }
-        if (face) face.style.transform = "scale(" + (0.96 + state.closer * 0.18) + ")";
+        if (face) face.style.transform = "none";
         if (t < 9500) _eqetechAnim = requestAnimationFrame(frame);
     }
     paintEqetechFace(world && world.faceTex, state);
