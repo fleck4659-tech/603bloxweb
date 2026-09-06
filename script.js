@@ -7317,7 +7317,11 @@ function showAzoraLoadingScreen() {
     var el = document.getElementById("azoraLoadingScreen");
     if (!el) return;
     el.classList.add("show");
+    el.classList.remove("gone");
     el.style.display = "flex";
+    el.style.opacity = "1";
+    el.style.visibility = "visible";
+    el.style.pointerEvents = "all";
     el.setAttribute("aria-hidden", "false");
 
     var status = document.getElementById("azoraLoadingStatus");
@@ -7369,7 +7373,11 @@ function hideAzoraLoadingScreen() {
     _azoraLoadingState = _azoraLoadingState || {};
     _azoraLoadingState.phase = "done";
     el.classList.remove("show");
+    el.classList.add("gone");
     el.style.display = "none";
+    el.style.opacity = "0";
+    el.style.visibility = "hidden";
+    el.style.pointerEvents = "none";
     el.setAttribute("aria-hidden", "true");
 }
 
@@ -7443,17 +7451,34 @@ window.onAzoraLoadingAClick = onAzoraLoadingAClick;
 // ============================================================
 // APP START
 // ============================================================
-function dismissIntroSplash(openAccount) {
+function forceHideIntroSplash() {
     var splash = document.getElementById("introSplash");
     if (!splash) return;
-    splash.classList.add("fade-out");
-    splash.style.transition = "opacity 0.6s ease";
+    splash.classList.add("fade-out", "gone");
+    splash.style.transition = "none";
     splash.style.opacity = "0";
+    splash.style.display = "none";
+    splash.style.visibility = "hidden";
     splash.style.pointerEvents = "none";
+}
+
+function dismissIntroSplash(openAccount) {
+    var splash = document.getElementById("introSplash");
+    if (!splash || splash.dataset.dismissed === "1") {
+        if (!splash || splash.dataset.loadingStarted === "1") return;
+    }
+    if (splash) {
+        splash.dataset.dismissed = "1";
+        splash.classList.add("fade-out");
+        splash.style.transition = "opacity 0.35s ease";
+        splash.style.opacity = "0";
+        splash.style.pointerEvents = "none";
+    }
     setTimeout(function () {
-        splash.style.display = "none";
-        splash.style.visibility = "hidden";
-        // After Welcome fades → loading screen (~3s), then account or main app
+        forceHideIntroSplash();
+        var s = document.getElementById("introSplash");
+        if (s && s.dataset.loadingStarted === "1") return;
+        if (s) s.dataset.loadingStarted = "1";
         runAzoraLoadingThen(function () {
             if (openAccount) {
                 try {
@@ -7465,7 +7490,7 @@ function dismissIntroSplash(openAccount) {
                 } catch (e) {}
             }
         });
-    }, 650);
+    }, 350);
 }
 
 window.addEventListener("DOMContentLoaded", function () {
@@ -7475,9 +7500,11 @@ window.addEventListener("DOMContentLoaded", function () {
     // Returning account or guest: skip Welcome text, still show ~3s loading
     if (loggedIn === "true" || loggedIn === "guest") {
         if (splash) {
+            splash.classList.add("gone", "fade-out");
             splash.style.display = "none";
             splash.style.pointerEvents = "none";
             splash.style.visibility = "hidden";
+            splash.style.opacity = "0";
         }
         // Hide account popup while loading
         try {
@@ -7500,12 +7527,18 @@ window.addEventListener("DOMContentLoaded", function () {
         }, 3000);
         setTimeout(function () {
             if (splash && splash.style.display !== "none") {
-                splash.style.opacity = "0";
-                splash.style.display = "none";
-                splash.style.pointerEvents = "none";
-                runAzoraLoadingThen(function () {
-                    try { if (typeof openCreateAccount === "function") openCreateAccount(); } catch (e) {}
-                });
+                if (typeof forceHideIntroSplash === "function") forceHideIntroSplash();
+                else {
+                    splash.style.opacity = "0";
+                    splash.style.display = "none";
+                    splash.style.pointerEvents = "none";
+                }
+                if (splash.dataset.loadingStarted !== "1") {
+                    splash.dataset.loadingStarted = "1";
+                    runAzoraLoadingThen(function () {
+                        try { if (typeof openCreateAccount === "function") openCreateAccount(); } catch (e) {}
+                    });
+                }
             }
         }, 3800);
     }
