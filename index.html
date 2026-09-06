@@ -13,7 +13,7 @@
     <link rel="manifest" href="manifest-azora.json">
     <link rel="apple-touch-icon" href="logo.jpg?v=70.2">
     <link rel="icon" href="logo.jpg?v=70.2">
-    <link rel="stylesheet" href="style.css?v=72.17">
+    <link rel="stylesheet" href="style.css?v=72.18">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
@@ -1528,12 +1528,7 @@
 
 <div id="eqetechOverlay" class="eqetech-overlay" style="display:none;" aria-hidden="true">
     <div class="eqetech-face" id="eqetechFace">
-        <div class="eqe-antenna"></div>
-        <div class="eqe-head">
-            <div class="eqe-eye left"><span class="eqe-shine"></span></div>
-            <div class="eqe-eye right"><span class="eqe-shine"></span></div>
-            <div class="eqe-mouth" id="eqetechMouth"></div>
-        </div>
+        <canvas id="eqetechCanvas" width="420" height="420" aria-label="Aturius"></canvas>
     </div>
     <p class="eqetech-text" id="eqetechText"></p>
 </div>
@@ -1597,7 +1592,7 @@
 
 <!-- Optional: trained Aturius brain (export from Azora account → Settings → Export code files) -->
 <script src="aturius-training-pack.js"></script>
-<script src="script.js?v=72.38"></script>
+<script src="script.js?v=72.39"></script>
 <script src="political-earth-data.js?v=72.24"></script>
 <script src="political-earth-hd.js?v=72.24"></script>
 <script src="political-earth-hyper.js?v=72.26"></script>

@@ -29010,6 +29010,7 @@ window.closeAzoraWireMap = closeAzoraWireMap;
 
 /* ===== eqetech search easter egg ===== */
 var _eqetechBusy = false;
+var _eqetechAnim = 0;
 
 function watchEqetechSearch(input) {
     if (!input || _eqetechBusy) return;
@@ -29031,7 +29032,70 @@ function startEqetechEgg(input) {
         try { input.setSelectionRange(input.value.length, input.value.length); } catch (e) {}
         setTimeout(step, 90);
     };
-    setTimeout(step, 200);
+    setTfunction drawEqetechAturius(state) {
+    var canvas = document.getElementById("eqetechCanvas");
+    if (!canvas) return;
+    var ctx = canvas.getContext("2d");
+    var w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    var cx = w / 2, cy = h / 2 + 8;
+    var r = 148;
+    var g = ctx.createRadialGradient(cx - 40, cy - 50, 20, cx, cy, r);
+    g.addColorStop(0, "#ffe566");
+    g.addColorStop(0.45, "#ffcc00");
+    g.addColorStop(1, "#d4a000");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,0.18)";
+    ctx.beginPath();
+    ctx.ellipse(cx - 36, cy - 48, 46, 22, -0.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    var eyeY = cy - 18;
+    var eyeRx = 18, eyeRy = 22;
+    var shine = 1 - (state.noShine || 0);
+    function eye(ex) {
+        ctx.fillStyle = "#111111";
+        ctx.beginPath();
+        ctx.ellipse(ex, eyeY, eyeRx, eyeRy, 0, 0, Math.PI * 2);
+        ctx.fill();
+        if (shine > 0.02) {
+            ctx.fillStyle = "rgba(255,255,255," + (0.55 * shine) + ")";
+            ctx.beginPath();
+            ctx.ellipse(ex - 5, eyeY - 7, 5, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+    eye(cx - 48);
+    eye(cx + 48);
+
+    ctx.strokeStyle = "#111111";
+    ctx.fillStyle = "#111111";
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    var happy = 1 - (state.unhappy || 0);
+    var longM = state.longMouth || 0;
+    var mouthY = cy + 48;
+    ctx.lineWidth = 14;
+    if (longM > 0.05) {
+        var tall = 10 + longM * 70;
+        ctx.beginPath();
+        ctx.ellipse(cx, mouthY + tall * 0.35, 22 + longM * 6, tall * 0.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+    } else if (happy > 0.55) {
+        ctx.beginPath();
+        ctx.moveTo(cx - 58, mouthY);
+        ctx.quadraticCurveTo(cx, mouthY + 28 * happy, cx + 58, mouthY);
+        ctx.stroke();
+    } else {
+        var frown = (0.55 - happy) / 0.55;
+        ctx.beginPath();
+        ctx.moveTo(cx - 52, mouthY + 10);
+        ctx.quadraticCurveTo(cx, mouthY - 18 * frown, cx + 52, mouthY + 10);
+        ctx.stroke();
+    }
 }
 
 function playEqetechScene() {
@@ -29040,19 +29104,32 @@ function playEqetechScene() {
     var text = document.getElementById("eqetechText");
     if (!ov) { _eqetechBusy = false; return; }
     ov.style.display = "flex";
-    ov.className = "eqetech-overlay fadein happy";
+    ov.className = "eqetech-overlay fadein";
     ov.setAttribute("aria-hidden", "false");
     if (text) text.textContent = "";
-    if (face) face.className = "eqetech-face happy";
-
-    setTimeout(function () { ov.classList.add("unhappy"); if (face) face.className = "eqetech-face unhappy"; }, 1600);
-    setTimeout(function () { ov.classList.add("no-shine"); }, 2600);
-    setTimeout(function () { ov.classList.add("long-mouth"); }, 3000);
-    setTimeout(function () { ov.classList.add("closer"); }, 3600);
+    if (face) face.className = "eqetech-face";
+    var state = { unhappy: 0, noShine: 0, longMouth: 0, closer: 0 };
+    var startAt = Date.now();
+    if (_eqetechAnim) cancelAnimationFrame(_eqetechAnim);
+    function frame() {
+        var t = Date.now() - startAt;
+        state.unhappy = Math.min(1, Math.max(0, (t - 1600) / 900));
+        state.noShine = Math.min(1, Math.max(0, (t - 2500) / 700));
+        state.longMouth = Math.min(1, Math.max(0, (t - 3000) / 900));
+        state.closer = Math.min(1, Math.max(0, (t - 3600) / 800));
+        if (face) face.style.transform = "scale(" + (0.92 + state.closer * 0.7) + ") translateY(" + (state.closer * 20) + "px)";
+        drawEqetechAturius(state);
+        if (t < 9500) _eqetechAnim = requestAnimationFrame(frame);
+    }
+    drawEqetechAturius({ unhappy: 0, noShine: 0, longMouth: 0 });
+    _eqetechAnim = requestAnimationFrame(frame);
     setTimeout(function () {
         var msg = "DON'T SAY THAT AGAIN";
         var i = 0;
-        if (text) text.textContent = "";
+        if (text) {
+            text.textContent = "";
+            text.classList.add("shake");
+        }
         var ty = setInterval(function () {
             if (!text) { clearInterval(ty); return; }
             text.textContent = msg.slice(0, ++i);
@@ -29062,7 +29139,11 @@ function playEqetechScene() {
     setTimeout(function () { closeEqetechEgg(); }, 9000);
 }
 
+chEgg(); }, 9000);
+}
+
 function closeEqetechEgg() {
+    if (_eqetechAnim) { cancelAnimationFrame(_eqetechAnim); _eqetechAnim = 0; }
     var ov = document.getElementById("eqetechOverlay");
     if (ov) {
         ov.className = "eqetech-overlay";
@@ -29070,7 +29151,9 @@ function closeEqetechEgg() {
         ov.setAttribute("aria-hidden", "true");
     }
     var text = document.getElementById("eqetechText");
-    if (text) text.textContent = "";
+    if (text) { text.textContent = ""; text.classList.remove("shake"); }
+    var face = document.getElementById("eqetechFace");
+    if (face) face.style.transform = "";
     _eqetechBusy = false;
 }
 
