@@ -7906,3 +7906,13 @@ html[data-decade="2016"] .aturius-main { font-family: Arial, sans-serif; }
 html[data-decade="2006"] .aturius-main { font-family: Verdana, sans-serif; }
 html[data-decade="1996"] .aturius-main { font-family: Tahoma, sans-serif; background: #c0c0c0; color: #000; }
 html[data-decade="1986"] .aturius-main { font-family: "Courier New", monospace; background: #000; color: #39ff14; }
+.aturius-model-line {
+    font-size: 12px;
+    opacity: 0.75;
+    margin: 0 12px 8px;
+}
+.aturius-watch-line {
+    margin: 4px 12px 10px;
+    color: #fca5a5;
+    font-size: 13px;
+}

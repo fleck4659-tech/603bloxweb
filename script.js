@@ -11417,6 +11417,137 @@ function getChatUserContext() {
     return { userName: userName, isGuest: isGuest, userId: userId };
 }
 
+function getAturiusModelLabel() {
+    var ai = {};
+    try { ai = getAICompanion() || {}; } catch (e) {}
+    var key = "";
+    try { key = (ai.apiKey || localStorage.getItem("azoraAIApiKey") || "").trim(); } catch (e2) {}
+    if (key) return "Aturius Core + Gemini 2.0 Flash";
+    if (ai.useOpenEnded === false) return "Aturius Core (trained replies only)";
+    return "Aturius Core + Open Line";
+}
+
+function refreshAturiusModelLine() {
+    var el = document.getElementById("aturiusModelLine");
+    if (el) el.textContent = "Model: " + getAturiusModelLabel();
+}
+
+var _aturiusWatchOn = false;
+
+function getBobbySamanamaStory() {
+    return "Bobby Samanama was a regular on Azora for one afternoon. People remember a yellow hat and a lot of questions. Then he typed a strange word into Search. The letters wiped themselves. The screen went dark. After that, Bobby never showed up in a world, on Feed, or in chat again. That is only a story we tell. Do not type that word into Search.";
+}
+
+function startAturiusEqetechWatch() {
+    _aturiusWatchOn = true;
+    try { setAturiusMood("mad"); } catch (e) {}
+    try {
+        var lab = document.getElementById("aturiusMoodLabel");
+        if (lab) lab.textContent = "Watching the keys…";
+    } catch (e2) {}
+    var line = document.getElementById("aturiusWatchLine");
+    if (line) {
+        line.style.display = "block";
+        line.textContent = "I can see your keyboard.";
+    }
+}
+
+function aturiusWatchTyping(input) {
+    if (!_aturiusWatchOn || !input) return;
+    var v = String(input.value || "");
+    var line = document.getElementById("aturiusWatchLine");
+    if (line) {
+        line.style.display = "block";
+        if (!v.length) line.textContent = "I am still watching the empty box.";
+        else line.textContent = "I see you typing: " + v;
+    }
+    try { setAturiusMood("mad"); } catch (e) {}
+    var compact = v.toLowerCase().replace(/\s+/g, "");
+    if (compact.indexOf("eqetech") !== -1 && line) {
+        line.textContent = "I see those letters. Do not finish that word.";
+    }
+}
+window.aturiusWatchTyping = aturiusWatchTyping;
+
+function parseAturiusSayQuote(userText) {
+    var raw = String(userText || "");
+    if (!raw) return null;
+    var quoted = raw.match(/[“"]([^”"]+)[”"]/);
+    if (!quoted || !quoted[1]) return null;
+    var line = quoted[1];
+    var low = raw.toLowerCase();
+    var wantsSay = /\b(say|repeat|echo|read this)\b/.test(low) ||
+        /hello[^\n]{0,24}\bsay\b/.test(low) ||
+        /hi[^\n]{0,18}\bsay\b/.test(low) ||
+        /hey[^\n]{0,18}\bsay\b/.test(low);
+    if (!wantsSay) return null;
+    return line;
+}
+
+function matchAturiusExtraTalk(userText) {
+    var t = String(userText || "").toLowerCase().trim();
+    if (!t) return null;
+    var pairs = [
+        [["what model", "which model", "what ai", "what are you running", "are you chatgpt", "are you gemini"],
+         "I am Aturius. My brain here is " + getAturiusModelLabel() + ". Core answers use the Azora training pack. If a cloud key is on, I can also use Gemini 2.0 Flash. If not, I use Aturius Core plus Open Line."],
+        [["tell me a joke", "joke", "make me laugh", "funny"],
+         "Why did the yellow sphere sit in Settings? It wanted to change its mood without rolling away!"],
+        [["another joke", "more jokes"],
+         "A Norm Game walked into a loading screen. The loading screen said, wait your turn."],
+        [["bored", "im bored", "i'm bored"],
+         "Try a Norm Game, paint your avatar, or ask me to make a tiny game idea. I can also build a page with /AzorWeb:"],
+        [["good night", "goodnight", "going to bed"],
+         "Night! Save your avatar if you changed it, then sleep well."],
+        [["good morning", "morning aturius"],
+         "Good morning! Claim daily coins if you have an account, then pick a game or a closet color."],
+        [["i love you", "love you aturius"],
+         "That's sweet. I'm your helper friend on Azora. Want a tip or a joke instead?"],
+        [["are you real", "are you a robot", "are you ai"],
+         "I'm Aturius, the helper inside Azora. Not a person in the room — a yellow-sphere guide that reads your words."],
+        [["favorite color", "favourite colour", "favorite colour"],
+         "Yellow, obviously. I am a yellow sphere. What's yours?"],
+        [["favorite game", "favourite game"],
+         "I like watching people try Parkour Plains and Azora House. Which one do you like?"],
+        [["how old are you", "your age"],
+         "I showed up with Azora in 2026. So I'm new, but I study a lot of training lines."],
+        [["sing", "song"],
+         "La la la — yellow sphere, spinning near, helping friends year to year. Want a real reply instead of a song?"],
+        [["weather"],
+         "I can't see outside your window. If it's nice, maybe play outside after Azora time."],
+        [["math", "what is 2+2", "2+2"],
+         "2 + 2 is 4. I can do other small math if you write the numbers clearly."],
+        [["spell"],
+         "Tell me the word and I can help spell it."],
+        [["story", "tell me a story"],
+         "Once a tiny yellow sphere got lost in Creator Studio. It followed the blue bricks home and found friends in chat. The end!"],
+        [["compliment", "be nice"],
+         "You're showing up and trying things on Azora. That counts."],
+        [["sorry"],
+         "You're okay. We can start the chat fresh. What do you want to do now?"],
+        [["wow", "cool", "nice"],
+         "Yeah! Want to keep going with a game, avatar colors, or a question?"],
+        [["bye", "goodbye", "see you", "cya"],
+         "See you later! I'll be here when you open Aturius again."],
+        [["protocol", "decade", "time machine", "timeline split"],
+         "Timeline Split is in Settings. 2026 is current Azora. Older years change layout, avatars, games, and even how I look."],
+        [["forum"],
+         "The Community Forum unlocks in the 2016 Legacy Protocol under Timeline Split."],
+        [["dial up", "56k"],
+         "2006 Web 1.0 Protocol adds a fake dial-up wait when you join a Norm Game."],
+        [["windows 95", "win95"],
+         "1996 Retro Desktop Protocol turns Azora into a teal desktop with gray windows."],
+        [["dos", "command line", "terminal"],
+         "1986 Terminal Protocol is a black-green screen. Type HELP or YEAR 2026 to leave."]
+    ];
+    for (var i = 0; i < pairs.length; i++) {
+        var keys = pairs[i][0];
+        for (var k = 0; k < keys.length; k++) {
+            if (t === keys[k] || t.indexOf(keys[k]) !== -1) return pairs[i][1];
+        }
+    }
+    return null;
+}
+
 function generateAIReply(userText, attachment) {
     var ai = getAICompanion();
     var t = (userText || "").toLowerCase().trim();
@@ -11442,6 +11573,25 @@ function generateAIReply(userText, attachment) {
     try { aturiusReactToTopic(userText); } catch (eTopic) {}
     var feeling = "neutral";
     try { feeling = getAturiusFeeling(); } catch (eFeel) {}
+
+    try {
+        if (/bobby\s*samanama/i.test(String(userText || ""))) {
+            return getBobbySamanamaStory();
+        }
+    } catch (eBob) {}
+    try {
+        var rawEq = String(userText || "").toLowerCase().replace(/\s+/g, "");
+        if (rawEq.indexOf("eqetech") !== -1) {
+            startAturiusEqetechWatch();
+            return "Do not say that to me. I can see the box you are typing in. Every letter. Stop.";
+        }
+    } catch (eEq) {}
+
+    // ===== SAY "exact line" — repeat quoted text only =====
+    try {
+        var said = parseAturiusSayQuote(userText);
+        if (said !== null) return said;
+    } catch (eSay) {}
 
     // ===== /AzorWeb: unique website from the prompt (not a template) =====
     var azorWebPrompt = parseAzorWebCommand(userText);
@@ -11490,6 +11640,10 @@ function generateAIReply(userText, attachment) {
         var trainedHit = matchAturiusTraining(userText);
         if (trainedHit) return trainedHit;
     } catch (eTrain) {}
+    try {
+        var extraTalk = matchAturiusExtraTalk(userText);
+        if (extraTalk) return extraTalk;
+    } catch (eExtra) {}
 
     // ===== GENERATE A GAME FROM PROMPT =====
     if (/\b(generate|create|make|build)\b/.test(t) && /\b(game|mini\s*game|level)\b/.test(t) ||
@@ -12416,7 +12570,9 @@ function scheduleAIReply(userText, aiChatId, attachment) {
         } catch (eM2) {}
         var extra = generateAIReply(userText, attachment);
         var reply = typeof extra === "string" ? extra : (extra && extra.text) || String(extra || "");
-        try { if (userText && reply) learnAturiusExchange(userText, reply); } catch (eLearn) {}
+        try {
+            if (userText && reply && parseAturiusSayQuote(userText) === null && !/bobby\s*samanama/i.test(userText) && String(userText).toLowerCase().indexOf("eqetech") === -1) learnAturiusExchange(userText, reply);
+        } catch (eLearn) {}
         var gameId = (extra && typeof extra === "object") ? extra.gameId : null;
         var websiteId = (extra && typeof extra === "object") ? extra.websiteId : null;
         // Keep / refresh laugh for joke requests or funny replies
@@ -12737,6 +12893,7 @@ window.getAturiusFeeling = getAturiusFeeling;
 window.setAturiusFeeling = setAturiusFeeling;
 
 function openAturiusPanel() {
+    try { refreshAturiusModelLine(); } catch (eML) {}
     var el = document.getElementById("aturiusOverlay");
     if (!el) return;
     el.style.display = "flex";

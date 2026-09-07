@@ -13,7 +13,7 @@
     <link rel="manifest" href="manifest-azora.json">
     <link rel="apple-touch-icon" href="logo.jpg?v=70.2">
     <link rel="icon" href="logo.jpg?v=70.2">
-    <link rel="stylesheet" href="style.css?v=72.27">
+    <link rel="stylesheet" href="style.css?v=72.29">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
@@ -1055,6 +1055,7 @@
         </div>
         <div class="aturius-main" id="aturiusChatPane">
             <div class="aturius-with" id="aturiusWithLabel">Chat with Aturius</div>
+            <div class="aturius-model-line" id="aturiusModelLine">Model: Aturius Core</div>
             <div class="aturius-howdoi" id="aturiusHowDoI">
                 <span>How do I…</span>
                 <button type="button" onclick="aturiusAskShortcut('How do I add friends?')">add friends</button>
@@ -1077,8 +1078,10 @@
                         <path fill="currentColor" d="M7.2 2.4c.5-.5 1.3-.5 1.8 0l1.6 1.6c.5.5.5 1.2.1 1.7L9.4 8.1c-.2.3-.2.7 0 1 1.1 1.8 2.7 3.4 4.5 4.5.3.2.7.2 1 0l2.4-1.3c.5-.4 1.2-.4 1.7.1l1.6 1.6c.5.5.5 1.3 0 1.8l-1.1 1.1c-.8.8-2 1.1-3.1.7-2.6-.9-5-2.6-7.1-4.7S4.6 8.2 3.7 5.6c-.4-1.1-.1-2.3.7-3.1L7.2 2.4z"/>
                     </svg>
                 </button>
-                <input type="text" id="aturiusInput" placeholder="Talk to Aturius… or ask it to generate a game!  Type : for emojis" onkeydown="if(window.azoraEmojiKey&&azoraEmojiKey(event,this))return;if(event.key==='Enter')sendAturiusMessage()">
+                <input type="text" id="aturiusInput" placeholder="Talk to Aturius… or ask it to generate a game!  Type : for emojis" onkeydown="if(window.azoraEmojiKey&&azoraEmojiKey(event,this))return;if(event.key==='Enter')sendAturiusMessage()" oninput="aturiusWatchTyping(this)">
                 <button type="button" onclick="sendAturiusMessage()">Send</button>
+            </div>
+            <p id="aturiusWatchLine" class="aturius-watch-line" style="display:none;"></p>
             </div>
         </div>
         <div class="aturius-settings-pane" id="aturiusSettingsPane" style="display:none;">
@@ -1669,7 +1672,7 @@
 
 <!-- Optional: trained Aturius brain (export from Azora account → Settings → Export code files) -->
 <script src="aturius-training-pack.js"></script>
-<script src="script.js?v=72.52"></script>
+<script src="script.js?v=72.54"></script>
 <script src="political-earth-data.js?v=72.24"></script>
 <script src="political-earth-hd.js?v=72.24"></script>
 <script src="political-earth-hyper.js?v=72.26"></script>
