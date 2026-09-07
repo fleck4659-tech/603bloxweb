@@ -7621,3 +7621,57 @@ html[data-theme="classic603"] .overlay .popup {
     background: #0d1117 !important;
     border-color: #00bfff !important;
 }
+
+.azora-sparkle-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 8;
+    pointer-events: none;
+    display: none;
+}
+.azora-sparkle-layer.on { display: block; }
+
+html[data-theme="gold"] body { background: #7a5a12 !important; }
+html[data-theme="gold"] .topbar, html[data-theme="gold"] .topbar-shell {
+    background: linear-gradient(90deg,#7a5a12,#f5d76e,#b45309) !important;
+    border-bottom-color: #fbbf24 !important;
+}
+html[data-theme="gold"] button {
+    background: linear-gradient(90deg,#f5d76e,#b45309) !important;
+    color: #3f2a05 !important;
+}
+html[data-theme="gold"] .topbar h2, html[data-theme="gold"] h1 { color: #fde68a !important; }
+
+html[data-theme="silver"] body { background: #4b5563 !important; }
+html[data-theme="silver"] .topbar, html[data-theme="silver"] .topbar-shell {
+    background: linear-gradient(90deg,#4b5563,#e5e7eb,#64748b) !important;
+    border-bottom-color: #cbd5e1 !important;
+}
+html[data-theme="silver"] button {
+    background: linear-gradient(90deg,#e5e7eb,#94a3b8) !important;
+    color: #111827 !important;
+}
+
+html[data-theme="neon"] body { background: #000 !important; }
+html[data-theme="neon"] .topbar, html[data-theme="neon"] .topbar-shell {
+    background: #000 !important;
+    border-bottom: 2px solid var(--accent, #22d3ee) !important;
+    box-shadow: 0 0 18px var(--accent, #22d3ee);
+}
+html[data-theme="neon"] button {
+    background: #050505 !important;
+    color: var(--accent, #22d3ee) !important;
+    border: 1px solid var(--accent, #22d3ee) !important;
+    box-shadow: 0 0 12px var(--accent, #22d3ee);
+}
+
+html[data-theme="sparkle"] body { background: #020617 !important; }
+html[data-theme="sparkle"] .topbar, html[data-theme="sparkle"] .topbar-shell {
+    background: rgba(2,6,23,0.82) !important;
+    border-bottom-color: #e2e8f0 !important;
+}
+html[data-theme="sparkle"] button {
+    background: rgba(248,250,252,0.12) !important;
+    color: #fff !important;
+    border: 1px solid #e2e8f0 !important;
+}

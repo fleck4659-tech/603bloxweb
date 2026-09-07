@@ -13,7 +13,7 @@
     <link rel="manifest" href="manifest-azora.json">
     <link rel="apple-touch-icon" href="logo.jpg?v=70.2">
     <link rel="icon" href="logo.jpg?v=70.2">
-    <link rel="stylesheet" href="style.css?v=72.22">
+    <link rel="stylesheet" href="style.css?v=72.23">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
@@ -23,6 +23,7 @@
     <div class="azora-bg-base" id="azoraBgBase"></div>
     <div class="azora-bg-wave" id="azoraBgWave"></div>
 </div>
+<canvas id="azoraSparkleLayer" class="azora-sparkle-layer" width="800" height="600" aria-hidden="true"></canvas>
 
 <!-- Offline / no internet full-screen -->
 <div id="azoraOfflineScreen" class="azora-offline-screen" style="display:none;" aria-hidden="true" role="alert">
@@ -259,6 +260,13 @@
                     <option value="prism">Prism</option>
                     <option value="lava">Lava Night</option>
                     <option value="classic603">Old Azora (603blox Web)</option>
+                    <option value="gold">Gold</option>
+                    <option value="silver">Silver</option>
+                    <option value="neon">Neon Night</option>
+                    <option value="sparkle">Nostalgic Sparkles</option>
+                    <option value="bronze">Bronze</option>
+                    <option value="rosegold">Rose Gold</option>
+                    <option value="chrome">Chrome</option>
                 </select>
                 <div class="theme-grid" id="themeGrid"></div>
             </div>
@@ -1607,7 +1615,7 @@
 
 <!-- Optional: trained Aturius brain (export from Azora account → Settings → Export code files) -->
 <script src="aturius-training-pack.js"></script>
-<script src="script.js?v=72.47"></script>
+<script src="script.js?v=72.48"></script>
 <script src="political-earth-data.js?v=72.24"></script>
 <script src="political-earth-hd.js?v=72.24"></script>
 <script src="political-earth-hyper.js?v=72.26"></script>

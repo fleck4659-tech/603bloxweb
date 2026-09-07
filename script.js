@@ -6967,7 +6967,14 @@ var AZORA_THEME_PRESETS = {
     blueberry: { bg1:"#172554", bg2:"#1e40af", bg3:"#4338ca", text1:"#eff6ff", text2:"#bfdbfe", accent:"#60a5fa", accent2:"#c4b5fd", card:"rgba(23,37,84,0.9)", border:"#3b82f6", top:"#172554", grad:"linear-gradient(90deg,#172554,#1e40af,#6d28d9)", pop:"#101b3c", foot:"#172554", ban:"rgba(59,130,246,0.22)" },
     prism:     { bg1:"#1e1b4b", bg2:"#0e7490", bg3:"#7c3aed", text1:"#f8fafc", text2:"#e9d5ff", accent:"#22d3ee", accent2:"#f0abfc", card:"rgba(30,27,75,0.9)", border:"#22d3ee", top:"#1e1b4b", grad:"linear-gradient(90deg,#0e7490,#7c3aed,#1d4ed8)", pop:"#12142c", foot:"#0f172a", ban:"rgba(34,211,238,0.2)" },
     lava:      { bg1:"#1c1917", bg2:"#7f1d1d", bg3:"#4c1d95", text1:"#fef2f2", text2:"#fecaca", accent:"#f87171", accent2:"#a78bfa", card:"rgba(28,25,23,0.92)", border:"#ef4444", top:"#1c1917", grad:"linear-gradient(90deg,#1c1917,#7f1d1d,#4c1d95)", pop:"#140808", foot:"#1c1917", ban:"rgba(248,113,113,0.18)" },
-    classic603:{ bg1:"#0d1117", bg2:"#0f172a", bg3:"#111827", text1:"#ffffff", text2:"#d0d0d0", accent:"#00bfff", accent2:"#0077ff", card:"#111827", border:"#00bfff", top:"#0f172a", grad:"linear-gradient(90deg,#00bfff,#0077ff)", pop:"#0d1117", foot:"#0d1117", ban:"rgba(0,191,255,0.16)" }
+    classic603:{ bg1:"#0d1117", bg2:"#0f172a", bg3:"#111827", text1:"#ffffff", text2:"#d0d0d0", accent:"#00bfff", accent2:"#0077ff", card:"#111827", border:"#00bfff", top:"#0f172a", grad:"linear-gradient(90deg,#00bfff,#0077ff)", pop:"#0d1117", foot:"#0d1117", ban:"rgba(0,191,255,0.16)" },
+    gold:      { bg1:"#3f2a05", bg2:"#7a5a12", bg3:"#c9a227", text1:"#fffbeb", text2:"#fde68a", accent:"#f5d76e", accent2:"#b45309", card:"rgba(63,42,5,0.92)", border:"#fbbf24", top:"#3f2a05", grad:"linear-gradient(90deg,#7a5a12,#f5d76e,#b45309)", pop:"#2a1c04", foot:"#3f2a05", ban:"rgba(245,215,110,0.22)" },
+    silver:    { bg1:"#1f2933", bg2:"#4b5563", bg3:"#9ca3af", text1:"#f8fafc", text2:"#e5e7eb", accent:"#e5e7eb", accent2:"#94a3b8", card:"rgba(31,41,51,0.92)", border:"#cbd5e1", top:"#111827", grad:"linear-gradient(90deg,#4b5563,#e5e7eb,#64748b)", pop:"#0f172a", foot:"#111827", ban:"rgba(226,232,240,0.2)" },
+    neon:      { bg1:"#000000", bg2:"#050505", bg3:"#111111", text1:"#f8fafc", text2:"#e2e8f0", accent:"#22d3ee", accent2:"#f0abfc", card:"rgba(0,0,0,0.88)", border:"#22d3ee", top:"#000000", grad:"linear-gradient(90deg,#000,#22d3ee,#a855f7)", pop:"#050505", foot:"#000000", ban:"rgba(34,211,238,0.2)" },
+    sparkle:   { bg1:"#020617", bg2:"#0b1220", bg3:"#1e1b4b", text1:"#ffffff", text2:"#e2e8f0", accent:"#f8fafc", accent2:"#c7d2fe", card:"rgba(2,6,23,0.72)", border:"#e2e8f0", top:"#020617", grad:"linear-gradient(90deg,#020617,#1e1b4b,#334155)", pop:"#020617", foot:"#020617", ban:"rgba(248,250,252,0.16)" },
+    bronze:    { bg1:"#3b2410", bg2:"#7c4a1e", bg3:"#b87333", text1:"#fff7ed", text2:"#fed7aa", accent:"#d97706", accent2:"#92400e", card:"rgba(59,36,16,0.92)", border:"#d97706", top:"#3b2410", grad:"linear-gradient(90deg,#7c4a1e,#d97706,#3b2410)", pop:"#24160a", foot:"#3b2410", ban:"rgba(217,119,6,0.2)" },
+    rosegold:  { bg1:"#4a1d2a", bg2:"#9d4e5c", bg3:"#e8b4b8", text1:"#fff1f2", text2:"#fecdd3", accent:"#f9a8d4", accent2:"#e8b4b8", card:"rgba(74,29,42,0.9)", border:"#f9a8d4", top:"#4a1d2a", grad:"linear-gradient(90deg,#9d4e5c,#e8b4b8,#4a1d2a)", pop:"#2a1018", foot:"#4a1d2a", ban:"rgba(249,168,212,0.2)" },
+    chrome:    { bg1:"#111827", bg2:"#334155", bg3:"#94a3b8", text1:"#f8fafc", text2:"#cbd5e1", accent:"#f1f5f9", accent2:"#38bdf8", card:"rgba(17,24,39,0.92)", border:"#e2e8f0", top:"#0f172a", grad:"linear-gradient(90deg,#334155,#f1f5f9,#38bdf8)", pop:"#0b1220", foot:"#0f172a", ban:"rgba(241,245,249,0.18)" }
 };
 
 function resolveAzoraTheme(theme) {
@@ -7073,9 +7080,11 @@ function paintThemeGrid(active) {
         orchid:"Orchid", nebula:"Nebula", galaxy:"Galaxy", aurora:"Aurora", twilight:"Twilight",
         indigo:"Indigo", cyber:"Cyber", ice:"Ice", moonlight:"Moonlight", slate:"Slate",
         forest:"Forest", mint:"Mint", ember:"Ember", sunset:"Sunset", candy:"Candy",
-        blueberry:"Blueberry", prism:"Prism", lava:"Lava", classic603:"Old Azora (603blox Web)"
+        blueberry:"Blueberry", prism:"Prism", lava:"Lava", classic603:"Old Azora (603blox Web)",
+        gold:"Gold", silver:"Silver", neon:"Neon Night", sparkle:"Nostalgic Sparkles",
+        bronze:"Bronze", rosegold:"Rose Gold", chrome:"Chrome"
     };
-    var ids = ["auto","midnight","void","ocean","cobalt","sapphire","storm","royal","grape","amethyst","orchid","nebula","galaxy","aurora","twilight","indigo","cyber","ice","moonlight","slate","forest","mint","ember","sunset","candy","blueberry","prism","lava","classic603"];
+    var ids = ["auto","midnight","void","ocean","cobalt","sapphire","storm","royal","grape","amethyst","orchid","nebula","galaxy","aurora","twilight","indigo","cyber","ice","moonlight","slate","forest","mint","ember","sunset","candy","blueberry","prism","lava","classic603","gold","silver","neon","sparkle","bronze","rosegold","chrome"];
     var html = ids.map(function (id) {
         var prev = id === "auto" ? "linear-gradient(135deg,#1d4ed8,#6d28d9)" : (AZORA_THEME_PRESETS[id] ? AZORA_THEME_PRESETS[id].grad : "#1e3a8a");
         var slow = id === "classic603" ? "applyOldAzoraTheme()" : ("changeTheme('" + id + "')");
@@ -7096,10 +7105,97 @@ function applyTheme(theme, opts) {
     var sel = document.getElementById("themeSelect");
     if (sel) sel.value = theme;
     paintThemeGrid(theme);
+    try { applyThemeFx(effective); } catch (eFx) {}
 }
 
 function changeTheme(value) {
     applyTheme(value);
+}
+
+var _sparkleTimer = null;
+var _neonTimer = null;
+function applyThemeFx(id) {
+    var layer = document.getElementById("azoraSparkleLayer");
+    if (_sparkleTimer) { cancelAnimationFrame(_sparkleTimer); _sparkleTimer = null; }
+    if (_neonTimer) { clearInterval(_neonTimer); _neonTimer = null; }
+    if (layer) {
+        layer.style.display = id === "sparkle" ? "block" : "none";
+        layer.classList.toggle("on", id === "sparkle");
+    }
+    if (id === "sparkle") startAzoraSparkles();
+    if (id === "neon") startAzoraNeonPulse();
+}
+
+function startAzoraNeonPulse() {
+    var hues = [187, 280, 140, 330, 45, 200];
+    var i = 0;
+    function paint() {
+        var h = hues[i % hues.length];
+        var c = "hsl(" + h + ", 95%, 58%)";
+        var root = document.documentElement;
+        root.style.setProperty("--accent", c);
+        root.style.setProperty("--card-border", c);
+        root.style.setProperty("--topbar-grad", "linear-gradient(90deg,#000," + c + ",#111)");
+        i++;
+    }
+    paint();
+    _neonTimer = setInterval(paint, 900);
+}
+
+function startAzoraSparkles() {
+    var canvas = document.getElementById("azoraSparkleLayer");
+    if (!canvas) return;
+    var ctx = canvas.getContext("2d");
+    var stars = [];
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener("resize", resize);
+    function spawn() {
+        stars.push({
+            x: Math.random() * canvas.width,
+            y: -20,
+            s: 6 + Math.random() * 14,
+            v: 0.4 + Math.random() * 1.1,
+            a: 0.35 + Math.random() * 0.65,
+            spin: Math.random() * Math.PI
+        });
+        if (stars.length > 48) stars.shift();
+    }
+    for (var n = 0; n < 18; n++) spawn();
+    function drawStar(x, y, r, rot) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(rot);
+        ctx.beginPath();
+        for (var i = 0; i < 4; i++) {
+            var a = (i * Math.PI) / 2;
+            ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+            var b = a + Math.PI / 4;
+            ctx.lineTo(Math.cos(b) * r * 0.28, Math.sin(b) * r * 0.28);
+        }
+        ctx.closePath();
+        ctx.fillStyle = "#ffffff";
+        ctx.fill();
+        ctx.restore();
+    }
+    function tick() {
+        if (!canvas.classList.contains("on")) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (Math.random() < 0.18) spawn();
+        stars.forEach(function (st) {
+            st.y += st.v;
+            st.spin += 0.01;
+            ctx.globalAlpha = st.a;
+            drawStar(st.x, st.y, st.s, st.spin);
+            if (st.y > canvas.height + 20) { st.y = -20; st.x = Math.random() * canvas.width; }
+        });
+        ctx.globalAlpha = 1;
+        _sparkleTimer = requestAnimationFrame(tick);
+    }
+    _sparkleTimer = requestAnimationFrame(tick);
 }
 
 function loadTheme() {
