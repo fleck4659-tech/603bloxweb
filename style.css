@@ -7882,3 +7882,27 @@ html.no-mouse #azoraDosOverlay, html.no-mouse #azoraDosOverlay * { pointer-event
     display: none;
     margin: 8px 0;
 }
+
+.aturius-decade-face {
+    display: none;
+    width: min(240px, 50vw);
+    height: min(240px, 50vw);
+    margin: 0 auto;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+#normGameCanvas.dec-2006 canvas,
+#normGameCanvas.dec-1996 canvas,
+#normGameCanvas.dec-1986 canvas {
+    image-rendering: pixelated !important;
+}
+#normGameCanvas.dec-2006 canvas { filter: blur(0.8px) contrast(0.92) saturate(0.85); }
+#normGameCanvas.dec-1996 { border: 4px outset #fff; background: #000; }
+#normGameCanvas.dec-1986 canvas { filter: grayscale(1) sepia(1) hue-rotate(80deg) contrast(1.4); }
+#normGameOverlay.dec-2016 .norm-game-hud { background: #0d6bd8; color: #fff; }
+#normGameOverlay.dec-1996 { background: #008080; }
+#normGameOverlay.dec-1986 { background: #000; }
+html[data-decade="2016"] .aturius-main { font-family: Arial, sans-serif; }
+html[data-decade="2006"] .aturius-main { font-family: Verdana, sans-serif; }
+html[data-decade="1996"] .aturius-main { font-family: Tahoma, sans-serif; background: #c0c0c0; color: #000; }
+html[data-decade="1986"] .aturius-main { font-family: "Courier New", monospace; background: #000; color: #39ff14; }

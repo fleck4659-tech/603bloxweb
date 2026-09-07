@@ -7164,6 +7164,77 @@ function applyDecadeProtocol(year) {
     }
     if (year !== "2016") closeAzoraForum();
     document.documentElement.classList.toggle("no-mouse", year === "1986");
+    try { paintAturiusDecadeFace(year); } catch (eAt) {}
+    try { applyDecadeGameView(year); } catch (eG) {}
+}
+
+function paintAturiusDecadeFace(year) {
+    var live = document.getElementById("aturiusCanvas");
+    var pix = document.getElementById("aturiusDecadeFace");
+    year = year || getDecadeTheme();
+    if (live) live.style.display = (year === "2026" || year === "2016") ? "" : "none";
+    if (!pix) return;
+    if (year === "2026") { pix.style.display = "none"; return; }
+    pix.style.display = "block";
+    var size = year === "1986" ? 32 : (year === "1996" ? 48 : (year === "2006" ? 80 : 160));
+    pix.width = size; pix.height = size;
+    var ctx = pix.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, size, size);
+    if (year === "1986") {
+        ctx.fillStyle = "#000"; ctx.fillRect(0, 0, size, size);
+        ctx.fillStyle = "#39ff14";
+        ctx.fillRect(10, 6, 12, 12);
+        ctx.fillStyle = "#000";
+        ctx.fillRect(13, 9, 2, 2); ctx.fillRect(17, 9, 2, 2);
+        ctx.fillRect(14, 14, 4, 2);
+        return;
+    }
+    ctx.fillStyle = year === "1996" ? "#008080" : "#1e3a8a";
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = "#ffcc00";
+    ctx.beginPath();
+    if (year === "2006" || year === "2016") {
+        ctx.arc(size/2, size/2, size*0.42, 0, Math.PI*2); ctx.fill();
+    } else {
+        ctx.fillRect(size*0.18, size*0.18, size*0.64, size*0.64);
+    }
+    ctx.fillStyle = "#111";
+    var e = size * 0.08;
+    ctx.fillRect(size*0.32, size*0.38, e, e);
+    ctx.fillRect(size*0.58, size*0.38, e, e);
+    ctx.fillRect(size*0.36, size*0.58, size*0.28, e);
+}
+
+function applyDecadeGameView(year) {
+    var wrap = document.getElementById("normGameCanvas");
+    var ov = document.getElementById("normGameOverlay");
+    year = year || getDecadeTheme();
+    if (wrap) {
+        wrap.classList.remove("dec-2016","dec-2006","dec-1996","dec-1986");
+        if (year !== "2026") wrap.classList.add("dec-" + year);
+    }
+    if (ov) {
+        ov.classList.remove("dec-2016","dec-2006","dec-1996","dec-1986");
+        if (year !== "2026") ov.classList.add("dec-" + year);
+    }
+    try {
+        if (typeof _normRenderer !== "undefined" && _normRenderer && wrap) {
+            if (year === "2006" || year === "1996" || year === "1986") {
+                _normRenderer.setPixelRatio(1);
+                _normRenderer.setSize(240, 160, false);
+                if (_normRenderer.domElement) {
+                    _normRenderer.domElement.style.width = "100%";
+                    _normRenderer.domElement.style.height = "100%";
+                    _normRenderer.domElement.style.imageRendering = "pixelated";
+                }
+            } else if (wrap.clientWidth) {
+                _normRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+                _normRenderer.setSize(wrap.clientWidth, wrap.clientHeight, false);
+                if (_normRenderer.domElement) _normRenderer.domElement.style.imageRendering = "auto";
+            }
+        }
+    } catch (e) {}
 }
 
 function playBeepSeq(steps) {
@@ -16808,6 +16879,9 @@ function makeNormCatAvatar(colors) {
 }
 
 function makeNormAvatarForCurrentGame(colors) {
+    var year = "2026";
+    try { year = getDecadeTheme(); } catch (eY) {}
+    if (year === "1996" || year === "1986") return makeDecadePixelAvatar3D(colors, year);
     var mode = "human";
     try {
         if (_normSession && _normSession.id && NORM_GAMES[_normSession.id]) {
@@ -16815,7 +16889,48 @@ function makeNormAvatarForCurrentGame(colors) {
         }
     } catch (e) {}
     if (mode === "cat") return makeNormCatAvatar(colors);
-    return makeNormAvatar(colors);
+    var mesh = makeNormAvatar(colors);
+    try {
+        if (year === "2006" && mesh) mesh.scale.set(0.92, 0.92, 0.92);
+        if (year === "2016" && mesh) mesh.scale.set(1.02, 1.02, 1.02);
+    } catch (eS) {}
+    return mesh;
+}
+
+function makeDecadePixelAvatar3D(colors, year) {
+    colors = colors || {};
+    var g = new THREE.Group();
+    function box(w, h, d, hex, x, y, z) {
+        var m = new THREE.Mesh(
+            new THREE.BoxGeometry(w, h, d),
+            new THREE.MeshLambertMaterial({ color: hex || "#888" })
+        );
+        m.position.set(x, y, z);
+        g.add(m);
+        return m;
+    }
+    var head = colors.head || "#ffcc00";
+    var torso = colors.torso || "#1e60ff";
+    var la = colors.leftArm || head;
+    var ra = colors.rightArm || head;
+    var ll = colors.leftLeg || "#00ebd4";
+    var rr = colors.rightLeg || "#00ebd4";
+    if (year === "1986") {
+        box(0.45, 0.45, 0.45, head, 0, 1.55, 0);
+        box(0.55, 0.7, 0.35, torso, 0, 1.0, 0);
+        box(0.18, 0.7, 0.18, la, -0.42, 1.0, 0);
+        box(0.18, 0.7, 0.18, ra, 0.42, 1.0, 0);
+        box(0.22, 0.7, 0.22, ll, -0.16, 0.35, 0);
+        box(0.22, 0.7, 0.22, rr, 0.16, 0.35, 0);
+    } else {
+        box(0.5, 0.5, 0.5, head, 0, 1.6, 0);
+        box(0.7, 0.8, 0.4, torso, 0, 0.95, 0);
+        box(0.22, 0.8, 0.22, la, -0.5, 0.95, 0);
+        box(0.22, 0.8, 0.22, ra, 0.5, 0.95, 0);
+        box(0.26, 0.8, 0.26, ll, -0.18, 0.3, 0);
+        box(0.26, 0.8, 0.26, rr, 0.18, 0.3, 0);
+    }
+    return g;
 }
 
 
@@ -19320,6 +19435,7 @@ function startNormGameWorld(def) {
     _normRenderer.setSize(w, h);
     _normRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     container.appendChild(_normRenderer.domElement);
+    try { applyDecadeGameView(getDecadeTheme()); } catch (eDecG) {}
 
     // Balanced lights — readable, not washed out
     _normScene.add(new THREE.AmbientLight(0xffffff, 0.62));
