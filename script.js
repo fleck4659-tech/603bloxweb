@@ -5391,6 +5391,7 @@ function applyColorsToMeshes(validated) {
         try {
             if (renderer && scene && camera) renderer.render(scene, camera);
         } catch (e2) {}
+        try { paintDecadePixelAvatar(); } catch (ePix) {}
         return true;
     } catch (e) {
         console.warn("[Azora] applyColorsToMeshes failed", e);
@@ -7142,6 +7143,94 @@ function applyDecadeTheme(year) {
     }
     if (year === "1986") openAzoraDos();
     else closeAzoraDos();
+    try { applyDecadeAvatarView(year); } catch (eAv) {}
+}
+
+function paintDecadePixelAvatar() {
+    var canvas = document.getElementById("avatar2d-pixel");
+    if (!canvas) return;
+    var ctx = canvas.getContext("2d");
+    var year = getDecadeTheme();
+    var w = year === "1986" ? 16 : 32;
+    var h = year === "1986" ? 24 : 48;
+    canvas.width = w;
+    canvas.height = h;
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, w, h);
+    var colors = { head:"#ffcc00", torso:"#1e60ff", leftArm:"#ffcc00", rightArm:"#ffcc00", leftLeg:"#00ebd4", rightLeg:"#00ebd4" };
+    try {
+        if (typeof readAvatarColorInputs === "function") {
+            var r = readAvatarColorInputs() || {};
+            Object.keys(colors).forEach(function (k) { if (r[k]) colors[k] = r[k]; });
+        }
+    } catch (e) {}
+    function box(x, y, bw, bh, hex) {
+        ctx.fillStyle = hex;
+        ctx.fillRect(x, y, bw, bh);
+        ctx.fillStyle = "rgba(0,0,0,0.18)";
+        ctx.fillRect(x + bw - 1, y, 1, bh);
+        ctx.fillRect(x, y + bh - 1, bw, 1);
+    }
+    if (year === "1986") {
+        box(6, 1, 4, 4, colors.head);
+        box(5, 5, 6, 7, colors.torso);
+        box(3, 5, 2, 7, colors.leftArm);
+        box(11, 5, 2, 7, colors.rightArm);
+        box(5, 12, 3, 8, colors.leftLeg);
+        box(8, 12, 3, 8, colors.rightLeg);
+        ctx.fillStyle = "#111";
+        ctx.fillRect(7, 2, 1, 1);
+        ctx.fillRect(9, 2, 1, 1);
+        return;
+    }
+    box(10, 2, 12, 12, colors.head);
+    box(12, 6, 2, 2, "#111");
+    box(18, 6, 2, 2, "#111");
+    box(14, 10, 4, 2, "#111");
+    box(10, 14, 12, 16, colors.torso);
+    box(4, 14, 6, 16, colors.leftArm);
+    box(22, 14, 6, 16, colors.rightArm);
+    box(10, 30, 6, 16, colors.leftLeg);
+    box(16, 30, 6, 16, colors.rightLeg);
+}
+
+function applyDecadeAvatarView(year) {
+    year = year || getDecadeTheme();
+    var box3 = document.getElementById("avatar3d-canvas");
+    var pix = document.getElementById("avatar2d-pixel");
+    var use2d = (year === "1996" || year === "1986");
+    if (pix) {
+        pix.style.display = use2d ? "block" : "none";
+        pix.classList.toggle("on", use2d);
+        if (use2d) paintDecadePixelAvatar();
+    }
+    if (box3) {
+        box3.style.display = use2d ? "none" : "";
+        box3.classList.toggle("decade-lofi", year === "2006");
+        box3.classList.toggle("decade-blocky", year === "2016");
+    }
+    try {
+        if (renderer && renderer.domElement && box3 && !use2d) {
+            if (year === "2006") {
+                renderer.setPixelRatio(1);
+                renderer.setSize(72, 96, false);
+                renderer.domElement.style.width = "100%";
+                renderer.domElement.style.height = "100%";
+                renderer.domElement.style.imageRendering = "pixelated";
+                renderer.domElement.style.filter = "blur(0.7px) contrast(0.95)";
+            } else {
+                var w = Math.max(box3.clientWidth, 160);
+                var h = Math.max(box3.clientHeight, 180);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+                renderer.setSize(w, h, false);
+                renderer.domElement.style.width = "100%";
+                renderer.domElement.style.height = "100%";
+                renderer.domElement.style.imageRendering = "auto";
+                renderer.domElement.style.filter = "none";
+            }
+            if (scene && camera) renderer.render(scene, camera);
+        }
+    } catch (eR) {}
 }
 
 function changeDecadeTheme(year) {
