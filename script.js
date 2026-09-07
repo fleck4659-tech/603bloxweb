@@ -11481,23 +11481,21 @@ window.aturiusWatchTyping = aturiusWatchTyping;
 
 function parseAturiusImageCommand(userText) {
     var raw = String(userText || "").trim();
-    var m = raw.match(/^:?\s*generate\s+an?\s+images?\s+of\s+(.+)$/i);
-    if (!m) m = raw.match(/^:\s*generate\s+an?\s+images?\s+of\s+(.+)$/i);
-    if (!m || !m[1]) return null;
-    var prompt = String(m[1] || "").trim();
+    var m = raw.match(/^:?\s*generate\s+an?\s+(image|picture|photo|video|clip|movie)s?\s+of\s+(.+)$/i);
+    if (!m || !m[2]) return null;
+    var kind = String(m[1] || "video").toLowerCase();
+    var prompt = String(m[2] || "").trim();
     if (!prompt) {
-        return "Say it like this: :Generate a image of a yellow sphere in a park";
+        return "Say it like this: :Generate a video of a yellow sphere bouncing in a park";
     }
     var check = moderateAturiusImagePrompt(prompt);
     if (!check.ok) {
-        return "I can't make that picture. This test generator only allows kind, kid-safe ideas. Try animals, landscapes, cartoons, food, or space.";
+        return "I can't make that clip. This test only allows kind, kid-safe ideas. Try animals, parks, space, or cartoons.";
     }
-    var safePrompt = "kid friendly cartoon illustration, wholesome, no violence, no weapons, " + prompt;
-    var url = "https://image.pollinations.ai/prompt/" + encodeURIComponent(safePrompt) +
-        "?nologo=true&safe=true&model=flux";
     return {
-        text: "Test image (filtered). If it looks wrong, try a simpler kid-safe description.",
-        imageUrl: url
+        text: "Making a short cartoon clip (test, filtered)…",
+        clipPrompt: prompt,
+        clipKind: kind
     };
 }
 
@@ -11518,6 +11516,71 @@ function moderateAturiusImagePrompt(prompt) {
     }
     if (t.length < 3) return { ok: false };
     return { ok: true };
+}
+
+function buildAturiusClip(prompt) {
+    return new Promise(function (resolve) {
+        var canvas = document.createElement("canvas");
+        canvas.width = 480;
+        canvas.height = 270;
+        var ctx = canvas.getContext("2d");
+        var low = String(prompt || "").toLowerCase();
+        var sky = "#7dd3fc";
+        if (/\b(space|star|moon|galaxy)\b/.test(low)) sky = "#0f172a";
+        else if (/\b(night)\b/.test(low)) sky = "#1e3a8a";
+        else if (/\b(ocean|sea|water)\b/.test(low)) sky = "#0284c7";
+        else if (/\b(park|grass|forest|tree)\b/.test(low)) sky = "#86efac";
+        else if (/\b(sunset)\b/.test(low)) sky = "#fdba74";
+        var ball = "#facc15";
+        var start = Date.now();
+        var seconds = 3;
+        function draw(t) {
+            var p = t / seconds;
+            ctx.fillStyle = sky;
+            ctx.fillRect(0, 0, 480, 270);
+            if (sky === "#0f172a") {
+                ctx.fillStyle = "#fff";
+                for (var s = 0; s < 24; s++) ctx.fillRect((s * 37 + t * 30) % 480, (s * 17) % 240, 2, 2);
+            } else {
+                ctx.fillStyle = "rgba(255,255,255,0.85)";
+                ctx.beginPath(); ctx.arc(80, 50, 22, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = "#4ade80";
+                ctx.fillRect(0, 210, 480, 60);
+            }
+            var x = 60 + p * 320;
+            var y = 160 + Math.sin(p * Math.PI * 4) * 36;
+            ctx.fillStyle = ball;
+            ctx.beginPath(); ctx.arc(x, y, 28, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "#111";
+            ctx.font = "16px sans-serif";
+            ctx.fillText(String(prompt).slice(0, 42), 16, 28);
+        }
+        if (typeof MediaRecorder === "undefined" || !canvas.captureStream) {
+            draw(1);
+            resolve(canvas.toDataURL("image/png"));
+            return;
+        }
+        var stream = canvas.captureStream(24);
+        var rec;
+        try { rec = new MediaRecorder(stream, { mimeType: "video/webm" }); }
+        catch (e) { rec = new MediaRecorder(stream); }
+        var chunks = [];
+        rec.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
+        rec.onstop = function () {
+            var blob = new Blob(chunks, { type: rec.mimeType || "video/webm" });
+            resolve(URL.createObjectURL(blob));
+        };
+        rec.start();
+        function tick() {
+            var t = (Date.now() - start) / 1000;
+            draw(Math.min(seconds, t));
+            if (t < seconds) requestAnimationFrame(tick);
+            else {
+                try { rec.stop(); } catch (e2) { resolve(canvas.toDataURL("image/png")); }
+            }
+        }
+        tick();
+    });
 }
 
 function parseAturiusSayQuote(userText) {
@@ -12647,10 +12710,21 @@ function scheduleAIReply(userText, aiChatId, attachment) {
         if (gameId) aiMsg.gameId = gameId;
         if (websiteId) aiMsg.websiteId = websiteId;
         if (extra && extra.imageUrl) aiMsg.imageUrl = extra.imageUrl;
+        if (extra && extra.videoUrl) aiMsg.videoUrl = extra.videoUrl;
         chat.messages.push(aiMsg);
         chat.updatedAt = Date.now();
         saveAIChatStore(store);
-        try { renderAturiusMessages(); } catch (eR) {}
+        try { renderAturiusMessages(); } catch (eR0) {}
+        if (extra && extra.clipPrompt) {
+            buildAturiusClip(extra.clipPrompt).then(function (url) {
+                if (!url) return;
+                if (/\.png|image\//.test(String(url).slice(0, 30)) || String(url).indexOf("data:image") === 0) aiMsg.imageUrl = url;
+                else aiMsg.videoUrl = url;
+                aiMsg.text = "Here's a short cartoon clip (test, filtered).";
+                saveAIChatStore(store);
+                try { renderAturiusMessages(); } catch (eR1) {}
+            });
+        }
         try { renderAturiusHistoryList(); } catch (eH2) {}
         try { if (typeof renderChatMessages === "function" && currentChatFriend === AZORA_AI_ID) renderChatMessages(); } catch (eR2) {}
         try { if (typeof renderAIChatHistoryList === "function") renderAIChatHistoryList(); } catch (eH) {}
@@ -14331,6 +14405,17 @@ function renderAturiusMessages() {
             genImg.alt = "Generated picture";
             genImg.className = "aturius-msg-img aturius-gen-img";
             div.appendChild(genImg);
+        }
+        if (m.videoUrl) {
+            var vid = document.createElement("video");
+            vid.src = m.videoUrl;
+            vid.controls = true;
+            vid.autoplay = true;
+            vid.loop = true;
+            vid.muted = true;
+            vid.playsInline = true;
+            vid.className = "aturius-gen-vid";
+            div.appendChild(vid);
         }
         if (m.attachment) {
             var attWrap = document.createElement("div");

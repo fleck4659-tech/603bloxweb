@@ -7958,3 +7958,11 @@ a { color: var(--link, var(--accent-2)) !important; }
     border-radius: 12px;
     margin: 8px 0;
 }
+
+.aturius-gen-vid {
+    display: block;
+    max-width: min(320px, 90%);
+    border-radius: 12px;
+    margin: 8px 0;
+    background: #000;
+}
