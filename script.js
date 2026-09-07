@@ -7005,6 +7005,16 @@ function applyThemePreset(id) {
     root.style.setProperty("--popup-bg", t.pop);
     root.style.setProperty("--footer", t.foot);
     root.style.setProperty("--banner", t.ban);
+    root.style.setProperty("--btn-bg", t.accent);
+    root.style.setProperty("--btn-text", t.bg1);
+    root.style.setProperty("--input-bg", t.pop);
+    root.style.setProperty("--link", t.accent2);
+    window._azoraThemePalette = [t.bg1, t.bg2, t.bg3, t.accent, t.accent2, t.top, t.border].filter(Boolean);
+    try {
+        document.body.style.background = t.bg2;
+        var base = document.getElementById("azoraBgBase");
+        if (base) base.style.background = t.bg2;
+    } catch (eBg) {}
 }
 
 function _hexToRgb(hex) {
@@ -27672,6 +27682,7 @@ window.onAzoraServiceWorkerReady = onAzoraServiceWorkerReady;
 
     function palette() {
         try {
+            if (window._azoraThemePalette && window._azoraThemePalette.length) return window._azoraThemePalette;
             if (document.documentElement.getAttribute("data-theme") === "dark") return DARK_COLORS;
         } catch (e) {}
         return LIGHT_COLORS;

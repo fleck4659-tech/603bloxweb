@@ -7916,3 +7916,30 @@ html[data-decade="1986"] .aturius-main { font-family: "Courier New", monospace; 
     color: #fca5a5;
     font-size: 13px;
 }
+
+/* Theme paints the whole chrome */
+button, .settings-tab, .azora-action-card, .topbar-feed-btn, .aturius-btn,
+.quick-games-open-btn, .bdur-btn, .theme-chip {
+    background: var(--accent, #a855f7) !important;
+    color: var(--text-1, #fff) !important;
+    border-color: var(--card-border, #fff) !important;
+}
+input, select, textarea, .settings-input {
+    background: var(--input-bg, var(--popup-bg, #111)) !important;
+    color: var(--text-1, #fff) !important;
+    border-color: var(--card-border) !important;
+}
+.overlay .popup, .azafn-overlay > div, .settings-panel, .news-card,
+.avatar-customizer-container, .customizer-controls,
+.aturius-overlay, .aturius-main, .aturius-stage,
+.marketplace-panel, .chat-panel, .azora-forum-shell {
+    background: var(--card-bg, rgba(0,0,0,0.7)) !important;
+    color: var(--text-1) !important;
+    border-color: var(--card-border) !important;
+}
+a { color: var(--link, var(--accent-2)) !important; }
+.footer, footer { background: var(--footer) !important; color: var(--text-1) !important; }
+.community-banner { background: var(--banner) !important; color: var(--text-1) !important; }
+.topbar, .topbar-shell { background: var(--topbar-grad, var(--topbar)) !important; color: var(--text-1) !important; }
+#coinsMenuBtn, .coins-menu-btn { background: var(--accent-2) !important; color: var(--text-1) !important; }
+.norm-game-hud, .norm-chat, .ll-toolbar { background: var(--popup-bg) !important; color: var(--text-1) !important; }
