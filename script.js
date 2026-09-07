@@ -2006,6 +2006,11 @@ function setLoggedInAccount(account) {
             publishPublicAvatar(account.username, account.avatar);
         }
     } catch (ePub2) {}
+    try {
+        if (account && account.username && typeof pullOwnAvatarFromCloud === "function") {
+            setTimeout(function () { pullOwnAvatarFromCloud(account.username); }, 400);
+        }
+    } catch (ePullAv) {}
 }
 
 function finishCreateAccount(username, password, userId, email) {
@@ -5602,7 +5607,8 @@ window.closeAvatarHistory = closeAvatarHistory;
 window.loadAvatarHistoryEntry = loadAvatarHistoryEntry;
 
 function saveAvatar() {
-    if (localStorage.getItem("loggedIn") !== "true") {
+    var loggedFlag = localStorage.getItem("loggedIn");
+    if (loggedFlag !== "true" && loggedFlag !== "guest") {
         alert("You need an account to customize or save avatars.\nCreate an account or log in to unlock this!");
         if (typeof openCreateAccount === "function") openCreateAccount();
         return;
@@ -5614,7 +5620,7 @@ function saveAvatar() {
     } catch (e) {
         account = null;
     }
-    if (!account || account.isGuest || !account.username) {
+    if (!account || !account.username) {
         alert("Please log in or create an account to save your custom 3D avatar!");
         if (typeof openCreateAccount === "function") openCreateAccount();
         return;
@@ -5757,7 +5763,7 @@ function loadAvatarFromStorage() {
                     if (typeof saveInventory === "function") saveInventory(invL);
                 }
             } catch (eHairLoad) {}
-            if (localStorage.getItem("loggedIn") === "true") {
+            if (localStorage.getItem("loggedIn") === "true" || localStorage.getItem("loggedIn") === "guest") {
                 var validated = moderateCharacterColors(
                     avatar.head, avatar.torso, avatar.leftArm, avatar.rightArm, avatar.leftLeg, avatar.rightLeg
                 );
@@ -5773,8 +5779,15 @@ function loadAvatarFromStorage() {
     } catch (e) {
         console.warn("[Azora] loadAvatarFromStorage", e);
     }
-    if (localStorage.getItem("loggedIn") === "true") {
-        updateAvatarColors();
+    if (localStorage.getItem("loggedIn") === "true" || localStorage.getItem("loggedIn") === "guest") {
+        try { updateAvatarColors(); } catch (eU) {}
+        try {
+            var accPull = JSON.parse(localStorage.getItem("azoraAccount") || "null");
+            if (accPull && accPull.username && typeof pullOwnAvatarFromCloud === "function" && !loadAvatarFromStorage._cloudOnce) {
+                loadAvatarFromStorage._cloudOnce = true;
+                pullOwnAvatarFromCloud(accPull.username);
+            }
+        } catch (eC) {}
     } else if (typeof paintAvatarDefaults === "function") {
         paintAvatarDefaults();
     }
@@ -15882,6 +15895,8 @@ function getNormAvatarColors() {
             av.hair = acc.avatar.hair || av.hair;
             av.face = acc.avatar.face || av.face;
             av.hairStyle = acc.avatar.hairStyle || av.hairStyle;
+            av.faceFile = acc.avatar.faceFile || av.faceFile;
+            av.scales = acc.avatar.scales || av.scales;
             if (Array.isArray(acc.avatar.extraParts)) av.extraParts = acc.avatar.extraParts.slice();
         } else if (acc && acc.gender) {
             av.gender = acc.gender;
@@ -19265,22 +19280,26 @@ function sendNormChat() {
 /** Real-time presence via Firebase (when configured). No fake players. */
 function startNormPresence(def) {
     stopNormPresence();
-    _normMyPresenceId = "p_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+    var who = "";
+    try { who = String(getNormDisplayName() || "player").replace(/[.#$\/\[\]]/g, "_"); } catch (eN) { who = "player"; }
+    _normMyPresenceId = "u_" + who + "_" + Math.random().toString(36).slice(2, 6);
     if (!_normSession) return;
+    def = def || {};
+    if (!def.roomPath) def.roomPath = _normSession.roomPath || ("/azoraNormRooms/" + (_normSession.id || "lobby") + "/players");
+    _normSession.roomPath = def.roomPath;
     _normSession._lastPublishAt = 0;
     _normSession._lastPullAt = 0;
     _normSession._seenRemoteIds = {};
 
     function publishSelf(force) {
         if (!_normSession) return;
-        if (typeof AZORA_CLOUD === "undefined" || !AZORA_CLOUD.isReady || !AZORA_CLOUD.isReady()) return;
         var now = Date.now();
         if (!force && now - (_normSession._lastPublishAt || 0) < 150) return;
         _normSession._lastPublishAt = now;
 
-        var base = (AZORA_CLOUD.firebaseUrl || "").replace(/\/$/, "");
-        // Cache-bust path is unique per player id; still force no-store
-        var url = base + def.roomPath + "/" + _normMyPresenceId + ".json";
+        var base = (typeof cloudBase === "function") ? cloudBase() : ((AZORA_CLOUD && AZORA_CLOUD.firebaseUrl) || "").replace(/\/$/, "");
+        if (!base) return;
+        var url = base + def.roomPath + "/" + encodeURIComponent(_normMyPresenceId) + ".json";
         var pos = _normLocalMesh ? {
             x: _normLocalMesh.position.x,
             y: _normLocalMesh.position.y,
@@ -19314,17 +19333,16 @@ function startNormPresence(def) {
 
     function pullPlayers(force) {
         if (!_normSession) return;
-        if (typeof AZORA_CLOUD === "undefined" || !AZORA_CLOUD.isReady || !AZORA_CLOUD.isReady()) {
+        var now = Date.now();
+        if (!force && now - (_normSession._lastPullAt || 0) < 180) return;
+        _normSession._lastPullAt = now;
+
+        var base = (typeof cloudBase === "function") ? cloudBase() : ((AZORA_CLOUD && AZORA_CLOUD.firebaseUrl) || "").replace(/\/$/, "");
+        if (!base) {
             _normPlayers = [{ id: "me", name: getNormDisplayName(), isMe: true, isGuest: isNormGuest() }];
             renderNormPlayerList();
             return;
         }
-        var now = Date.now();
-        if (!force && now - (_normSession._lastPullAt || 0) < 200) return;
-        _normSession._lastPullAt = now;
-
-        var base = (AZORA_CLOUD.firebaseUrl || "").replace(/\/$/, "");
-        // IMPORTANT: cache-bust so the FIRST joiner does not keep a stale room snapshot
         var url = base + def.roomPath + ".json?ts=" + now + "&r=" + Math.random().toString(36).slice(2, 7);
         fetch(url, { method: "GET", cache: "no-store", headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" } })
             .then(function (r) { return r.json(); })
@@ -19343,7 +19361,7 @@ function startNormPresence(def) {
                         // Accept rows even if updatedAt missing (treat as now)
                         var updated = typeof row.updatedAt === "number" ? row.updatedAt : tnow;
                         // 15s stale window (was 8s — could drop phones with lag)
-                        if (tnow - updated > 15000) return;
+                        if (tnow - updated > 30000) return;
                         alive[pid] = true;
                         list.push({
                             id: pid,
@@ -26300,6 +26318,26 @@ function fetchPublicAvatarFromCloud(username, callback) {
 window.fetchPublicAvatarFromCloud = fetchPublicAvatarFromCloud;
 window.getAvatarDataForUsername = getAvatarDataForUsername;
 
+function pullOwnAvatarFromCloud(username) {
+    username = String(username || "").trim();
+    if (!username) return;
+    fetchPublicAvatarFromCloud(username, function (av) {
+        if (!av || typeof av !== "object") return;
+        try {
+            var acc = JSON.parse(localStorage.getItem("azoraAccount") || "null");
+            if (!acc) return;
+            acc.avatar = acc.avatar || {};
+            ["head","torso","leftArm","rightArm","leftLeg","rightLeg","hair","hairStyle","face","faceFile","gender","scales"].forEach(function (k) {
+                if (av[k] != null) acc.avatar[k] = av[k];
+            });
+            localStorage.setItem("azoraAccount", JSON.stringify(acc));
+            localStorage.setItem("azoraAvatar", JSON.stringify(acc.avatar));
+            if (typeof loadAvatarFromStorage === "function") loadAvatarFromStorage();
+        } catch (e) {}
+    });
+}
+window.pullOwnAvatarFromCloud = pullOwnAvatarFromCloud;
+
 function _profile3dMat(color) {
     try {
         if (typeof azoraGlossMaterial === "function") return azoraGlossMaterial(color);
@@ -29276,14 +29314,11 @@ function initEqetechAturius3D() {
     faceTex.magFilter = THREE.LinearFilter;
     var faceMesh = new THREE.Mesh(
         new THREE.PlaneGeometry(1.35, 1.35),
-        new THREE.MeshBasicMaterial({ map: faceTex, transparent: true, depthTest: true, depthWrite: false, side: THREE.DoubleSide })
+        new THREE.MeshBasicMaterial({ map: faceTex, transparent: true, depthTest: false, depthWrite: false, side: THREE.DoubleSide })
     );
-    faceMesh.position.set(0, 0.05, 1.25);
-    var rig = new THREE.Group();
-    rig.add(sphere);
-    rig.add(faceMesh);
-    scene.add(rig);
-    _eqe3d = { renderer: renderer, scene: scene, camera: camera, sphere: sphere, faceMesh: faceMesh, faceTex: faceTex, key: key, amb: amb, rig: rig };
+    faceMesh.position.set(0, 0.05, 1.42);
+    scene.add(faceMesh);
+    _eqe3d = { renderer: renderer, scene: scene, camera: camera, sphere: sphere, faceMesh: faceMesh, faceTex: faceTex, key: key, amb: amb };
     return _eqe3d;
 }
 
@@ -29314,10 +29349,9 @@ function playEqetechScene() {
         state.longMouth = Math.min(1, Math.max(0, (t - 1600) / 1000));
         state.closer = Math.min(1, Math.max(0, (t - 2200) / 900));
         if (world && world.camera) {
-            world.camera.position.set(0, 0, 3.4 - state.closer * 0.55);
+            world.camera.position.set(0, 0, 3.4 - state.closer * 0.45);
             world.camera.lookAt(0, 0, 0);
-            if (world.rig) world.rig.scale.setScalar(1 + state.closer * 0.12);
-            if (world.rig) world.rig.position.y = 0;
+            if (world.faceMesh) world.faceMesh.position.set(0, 0.05, 1.42);
             if (world.key) world.key.intensity = 1.1 - state.unhappy * 0.62;
             if (world.amb) world.amb.intensity = 0.65 - state.unhappy * 0.34;
             if (world.sphere && world.sphere.material) {
