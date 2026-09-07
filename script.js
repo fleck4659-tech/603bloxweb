@@ -5391,7 +5391,7 @@ function applyColorsToMeshes(validated) {
         try {
             if (renderer && scene && camera) renderer.render(scene, camera);
         } catch (e2) {}
-        try { paintDecadePixelAvatar(); } catch (ePix) {}
+        try { if (getDecadeTheme() !== "2006") paintDecadePixelAvatar(); } catch (ePix) {}
         return true;
     } catch (e) {
         console.warn("[Azora] applyColorsToMeshes failed", e);
@@ -5735,6 +5735,7 @@ function saveAvatar() {
     try {
         if (typeof pushAvatarHistory === "function") pushAvatarHistory(account.avatar, "save");
     } catch (eHist) {}
+    try { if (getDecadeTheme() === "1996") playFloppySound(); } catch (eFlop) {}
     alert("3D Avatar saved successfully to your Azora account!");
 }
 
@@ -7144,7 +7145,145 @@ function applyDecadeTheme(year) {
     if (year === "1986") openAzoraDos();
     else closeAzoraDos();
     try { applyDecadeAvatarView(year); } catch (eAv) {}
+    try { applyDecadeProtocol(year); } catch (eP) {}
 }
+
+function applyDecadeProtocol(year) {
+    var forumBtn = document.getElementById("openForumBtn");
+    if (forumBtn) forumBtn.style.display = year === "2016" ? "block" : "none";
+    var refresh = document.getElementById("refreshAvatar2006");
+    if (refresh) refresh.style.display = year === "2006" ? "inline-block" : "none";
+    document.body.classList.toggle("protocol-2016", year === "2016");
+    document.body.classList.toggle("protocol-2006", year === "2006");
+    document.body.classList.toggle("protocol-1996", year === "1996");
+    document.body.classList.toggle("protocol-1986", year === "1986");
+    var desk = document.getElementById("azoraWin95Desktop");
+    if (desk) {
+        desk.style.display = year === "1996" ? "block" : "none";
+        desk.setAttribute("aria-hidden", year === "1996" ? "false" : "true");
+    }
+    if (year !== "2016") closeAzoraForum();
+    document.documentElement.classList.toggle("no-mouse", year === "1986");
+}
+
+function playBeepSeq(steps) {
+    try {
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        var t0 = ctx.currentTime;
+        steps.forEach(function (s) {
+            var o = ctx.createOscillator();
+            var g = ctx.createGain();
+            o.type = s.type || "square";
+            o.frequency.value = s.freq;
+            g.gain.value = 0.05;
+            o.connect(g); g.connect(ctx.destination);
+            o.start(t0 + s.at);
+            o.stop(t0 + s.at + s.dur);
+        });
+    } catch (e) {}
+}
+
+function playDialUpSound() {
+    playBeepSeq([
+        { freq: 600, at: 0, dur: 0.25 },
+        { freq: 900, at: 0.3, dur: 0.2 },
+        { freq: 1200, at: 0.55, dur: 0.35 },
+        { freq: 1800, at: 1.0, dur: 0.15 },
+        { freq: 1400, at: 1.2, dur: 0.4 },
+        { freq: 800, at: 1.7, dur: 0.3 }
+    ]);
+}
+
+function playFloppySound() {
+    playBeepSeq([
+        { freq: 220, at: 0, dur: 0.08, type: "sawtooth" },
+        { freq: 180, at: 0.1, dur: 0.08, type: "sawtooth" },
+        { freq: 240, at: 0.22, dur: 0.12, type: "square" },
+        { freq: 160, at: 0.38, dur: 0.18, type: "sawtooth" }
+    ]);
+}
+
+function refreshAvatarThumbnail() {
+    paintDecadePixelAvatar();
+    var pix = document.getElementById("avatar2d-pixel");
+    if (pix) { pix.style.display = "block"; pix.classList.add("on"); }
+    var box3 = document.getElementById("avatar3d-canvas");
+    if (box3) box3.style.display = "none";
+    alert("Avatar thumbnail refreshed.");
+}
+window.refreshAvatarThumbnail = refreshAvatarThumbnail;
+
+function openAzoraForum() {
+    var ov = document.getElementById("azoraForumOverlay");
+    if (!ov) return;
+    ov.style.display = "flex";
+    renderAzoraForum();
+}
+function closeAzoraForum() {
+    var ov = document.getElementById("azoraForumOverlay");
+    if (ov) ov.style.display = "none";
+}
+function loadForumThreads() {
+    try {
+        var list = JSON.parse(localStorage.getItem("azoraForumThreads") || "[]");
+        return Array.isArray(list) ? list : [];
+    } catch (e) { return []; }
+}
+function renderAzoraForum() {
+    var el = document.getElementById("azoraForumThreads");
+    if (!el) return;
+    var list = loadForumThreads();
+    if (!list.length) {
+        el.innerHTML = "<p>No threads yet. Be the first to post.</p>";
+        return;
+    }
+    el.innerHTML = list.map(function (t, i) {
+        var replies = (t.replies || []).map(function (r) {
+            return "<div class='forum-reply'><b>" + String(r.user || "Player").replace(/</g,"") + ":</b> " + String(r.text || "").replace(/</g,"") + "</div>";
+        }).join("");
+        return "<article class='forum-thread'><h4>" + String(t.title || "").replace(/</g,"") + "</h4><p>" + String(t.body || "").replace(/</g,"") + "</p><small>by " + String(t.user || "Player").replace(/</g,"") + "</small>" + replies + "<form onsubmit='replyAzoraForum(event," + i + ")'><input maxlength='200' placeholder='Reply'><button type='submit'>Reply</button></form></article>";
+    }).join("");
+}
+function postAzoraForumThread(ev) {
+    ev.preventDefault();
+    var title = ((document.getElementById("forumTitle") || {}).value || "").trim();
+    var body = ((document.getElementById("forumBody") || {}).value || "").trim();
+    if (!title || !body) return;
+    var list = loadForumThreads();
+    var user = "Player";
+    try { user = (JSON.parse(localStorage.getItem("azoraAccount") || "{}").username) || user; } catch (e) {}
+    list.unshift({ title: title.slice(0,80), body: body.slice(0,400), user: user, replies: [], at: Date.now() });
+    localStorage.setItem("azoraForumThreads", JSON.stringify(list.slice(0, 40)));
+    if (document.getElementById("forumTitle")) document.getElementById("forumTitle").value = "";
+    if (document.getElementById("forumBody")) document.getElementById("forumBody").value = "";
+    renderAzoraForum();
+}
+function replyAzoraForum(ev, idx) {
+    ev.preventDefault();
+    var input = ev.target.querySelector("input");
+    var text = (input && input.value || "").trim();
+    if (!text) return;
+    var list = loadForumThreads();
+    if (!list[idx]) return;
+    var user = "Player";
+    try { user = (JSON.parse(localStorage.getItem("azoraAccount") || "{}").username) || user; } catch (e) {}
+    list[idx].replies = list[idx].replies || [];
+    list[idx].replies.push({ user: user, text: text.slice(0,200) });
+    localStorage.setItem("azoraForumThreads", JSON.stringify(list));
+    renderAzoraForum();
+}
+function openWin95App(name) {
+    if (name === "shop" && typeof openMarketplace === "function") openMarketplace();
+    if (name === "bag" && typeof openInventory === "function") openInventory();
+    else if (name === "bag" && typeof openBag === "function") openBag();
+    if (name === "chat" && typeof openChatPanel === "function") openChatPanel();
+    if (name === "settings" && typeof openSettings === "function") openSettings();
+}
+window.openAzoraForum = openAzoraForum;
+window.closeAzoraForum = closeAzoraForum;
+window.postAzoraForumThread = postAzoraForumThread;
+window.replyAzoraForum = replyAzoraForum;
+window.openWin95App = openWin95App;
 
 function paintDecadePixelAvatar() {
     var canvas = document.getElementById("avatar2d-pixel");
@@ -7198,7 +7337,7 @@ function applyDecadeAvatarView(year) {
     year = year || getDecadeTheme();
     var box3 = document.getElementById("avatar3d-canvas");
     var pix = document.getElementById("avatar2d-pixel");
-    var use2d = (year === "1996" || year === "1986");
+    var use2d = (year === "1996" || year === "1986" || year === "2006");
     if (pix) {
         pix.style.display = use2d ? "block" : "none";
         pix.classList.toggle("on", use2d);
@@ -7317,7 +7456,8 @@ function runAzoraDosCommand(raw) {
     if (up === "SETTINGS") { closeAzoraDos(); if (typeof openSettings === "function") openSettings(); switchSettingsTab("themes"); return; }
     if (up === "FEED") { closeAzoraDos(); if (typeof openPublicFeed === "function") openPublicFeed(); return; }
     if (up === "CHAT") { closeAzoraDos(); if (typeof openChatPanel === "function") openChatPanel(); return; }
-    if (up === "AVATAR" || up === "CLOSET") { closeAzoraDos(); return; }
+    if (up === "SHOP" || up === "MARKET") { closeAzoraDos(); if (typeof openMarketplace === "function") openMarketplace(); return; }
+    if (up === "AVATAR" || up === "CLOSET") { closeAzoraDos(); if (typeof applyDecadeTheme === "function") { /* stay 1986 but hide dos briefly */ } return; }
     if (up === "COINS") {
         var n = document.getElementById("bucks");
         azoraDosPrint("AZORACOINS = " + (n ? n.textContent : "0"));
@@ -15364,10 +15504,12 @@ setTimeout(function () {
 function switchSettingsTab(tab) {
     var basic = document.getElementById("settingsPanelBasic");
     var themes = document.getElementById("settingsPanelThemes");
+    var protocols = document.getElementById("settingsPanelProtocols");
     var security = document.getElementById("settingsPanelSecurity");
     var accounts = document.getElementById("settingsPanelAccounts");
     var tabBasic = document.getElementById("settingsTabBasic");
     var tabThemes = document.getElementById("settingsTabThemes");
+    var tabProtocols = document.getElementById("settingsTabProtocols");
     var tabSecurity = document.getElementById("settingsTabSecurity");
     var tabAccounts = document.getElementById("settingsTabAccounts");
     if (!basic || !security) return;
@@ -15380,10 +15522,12 @@ function switchSettingsTab(tab) {
 
     if (basic) basic.style.display = "none";
     if (themes) themes.style.display = "none";
+    if (protocols) protocols.style.display = "none";
     if (security) security.style.display = "none";
     if (accounts) accounts.style.display = "none";
     if (tabBasic) tabBasic.classList.remove("active");
     if (tabThemes) tabThemes.classList.remove("active");
+    if (tabProtocols) tabProtocols.classList.remove("active");
     if (tabSecurity) tabSecurity.classList.remove("active");
     if (tabAccounts) tabAccounts.classList.remove("active");
 
@@ -15391,6 +15535,13 @@ function switchSettingsTab(tab) {
         if (themes) themes.style.display = "block";
         if (tabThemes) tabThemes.classList.add("active");
         try { paintThemeGrid(localStorage.getItem("azoraTheme") || "auto"); } catch (eT) {}
+        return;
+    }
+    if (tab === "protocols") {
+        if (protocols) protocols.style.display = "block";
+        if (tabProtocols) tabProtocols.classList.add("active");
+        var ds = document.getElementById("decadeSelect");
+        if (ds) ds.value = getDecadeTheme();
         return;
     }
 
@@ -17013,6 +17164,11 @@ function joinNormGame(gameId) {
             if (play) play.style.display = "flex";
             startNormGameWorld(def);
         }
+    }
+    if (getDecadeTheme() === "2006") {
+        playDialUpSound();
+        duration += 10000;
+        hints.unshift("Dialing 56k…");
     }
     requestAnimationFrame(tick);
 }

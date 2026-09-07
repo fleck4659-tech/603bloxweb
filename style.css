@@ -7830,3 +7830,55 @@ html[data-decade="1986"] .avatar-2d-pixel {
     background: #000;
     border: 1px solid #39ff14;
 }
+
+body.protocol-2016 .azora-action-card.feed,
+body.protocol-2016 .quick-games-open-btn,
+body.protocol-2016 #azoraGamesSection .azora-games-sub { display: none !important; }
+body.protocol-2016 .topbar-shell { flex-wrap: wrap; }
+html[data-decade="2016"] .azora-action-grid { display: none; }
+
+.azora-forum-overlay {
+    position: fixed; inset: 0; z-index: 16000;
+    display: none; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.45);
+}
+.azora-forum-shell {
+    width: min(640px, 92vw); max-height: 80vh; overflow: auto;
+    background: #fff; color: #111; border: 3px solid #0d6bd8; padding: 12px;
+    font-family: Verdana, sans-serif;
+}
+.forum-thread { border-bottom: 1px solid #9cf; padding: 8px 0; }
+.forum-reply { margin: 4px 0 4px 16px; font-size: 13px; }
+
+.azora-win95 {
+    position: fixed; inset: 0; z-index: 50;
+    background: #008080;
+    background-image: linear-gradient(#008080 14px, #007272 14px);
+    background-size: 16px 16px;
+}
+.win95-icons { display: flex; flex-direction: column; gap: 10px; padding: 18px; width: 120px; }
+.win95-icons button {
+    background: transparent !important; color: #fff !important;
+    border: 0 !important; text-align: left !important;
+}
+.win95-taskbar {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 32px;
+    background: #c0c0c0; color: #000; display: flex; align-items: center; gap: 12px;
+    padding: 0 8px; border-top: 2px outset #fff;
+}
+html[data-decade="1996"] .overlay .popup,
+html[data-decade="1996"] .marketplace-panel,
+html[data-decade="1996"] .chat-panel {
+    border: 3px outset #fff !important;
+    background: #c0c0c0 !important;
+    border-radius: 0 !important;
+}
+
+html.no-mouse, html.no-mouse * { cursor: none !important; }
+html.no-mouse button, html.no-mouse a { pointer-events: none !important; }
+html.no-mouse #azoraDosOverlay, html.no-mouse #azoraDosOverlay * { pointer-events: auto !important; cursor: none !important; }
+
+.refresh-avatar-2006 {
+    display: none;
+    margin: 8px 0;
+}

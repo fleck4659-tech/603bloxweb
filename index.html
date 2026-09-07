@@ -13,7 +13,7 @@
     <link rel="manifest" href="manifest-azora.json">
     <link rel="apple-touch-icon" href="logo.jpg?v=70.2">
     <link rel="icon" href="logo.jpg?v=70.2">
-    <link rel="stylesheet" href="style.css?v=72.25">
+    <link rel="stylesheet" href="style.css?v=72.26">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
@@ -31,6 +31,32 @@
         <span>C:\AZORA&gt;</span>
         <input id="azoraDosInput" type="text" autocomplete="off" spellcheck="false" aria-label="Azora command line">
     </div>
+</div>
+
+<div id="azoraForumOverlay" class="azora-forum-overlay" style="display:none;">
+    <div class="azora-forum-shell">
+        <header>
+            <strong>Azora Community Forum</strong>
+            <button type="button" onclick="closeAzoraForum()">Close</button>
+        </header>
+        <div id="azoraForumThreads" class="azora-forum-threads"></div>
+        <form onsubmit="postAzoraForumThread(event)">
+            <input id="forumTitle" maxlength="80" placeholder="Thread title">
+            <textarea id="forumBody" maxlength="400" placeholder="Write a post"></textarea>
+            <button type="submit">Post thread</button>
+        </form>
+    </div>
+</div>
+
+<div id="azoraWin95Desktop" class="azora-win95" style="display:none;" aria-hidden="true">
+    <div class="win95-icons">
+        <button type="button" onclick="openWin95App('shop')">Shop</button>
+        <button type="button" onclick="openWin95App('bag')">Bag</button>
+        <button type="button" onclick="openWin95App('chat')">Chat</button>
+        <button type="button" onclick="openWin95App('settings')">Settings</button>
+        <button type="button" onclick="applyDecadeTheme('2026')">My Computer<br>(Exit)</button>
+    </div>
+    <div class="win95-taskbar"><span>Start</span><span>Azora 95</span></div>
 </div>
 
 <!-- Offline / no internet full-screen -->
@@ -209,6 +235,7 @@
         <div class="settings-tabs">
             <button type="button" class="settings-tab active" id="settingsTabBasic" onclick="switchSettingsTab('basic')">Basic Settings</button>
             <button type="button" class="settings-tab" id="settingsTabThemes" onclick="switchSettingsTab('themes')">Themes</button>
+            <button type="button" class="settings-tab" id="settingsTabProtocols" onclick="switchSettingsTab('protocols')">Timeline Split</button>
             <button type="button" class="settings-tab" id="settingsTabSecurity" onclick="switchSettingsTab('security')">Security</button>
             <button type="button" class="settings-tab" id="settingsTabAccounts" onclick="switchSettingsTab('accounts')">Accounts</button>
         </div>
@@ -366,24 +393,28 @@
 
         <div id="settingsPanelThemes" class="settings-panel" style="display:none;">
             <div class="settings-section">
-                <label class="settings-label">Decade Time Machine</label>
-                <p class="settings-hint" style="margin-top:0;">See how Azora might have looked on June 26 in another decade. Games and accounts stay the same. Only the skin changes.</p>
-                <select id="decadeSelect" class="settings-input" onchange="changeDecadeTheme(this.value)">
-                    <option value="2026">Current Azora (June 26, 2026)</option>
-                    <option value="2016">June 26, 2016 — Classic Physics Game</option>
-                    <option value="2006">June 26, 2006 — Early Web</option>
-                    <option value="1996">June 26, 1996 — Retro Desktop</option>
-                    <option value="1986">June 26, 1986 — Command Line</option>
-                </select>
-                <p id="decadeThemeStatus" class="settings-hint" style="margin-top:8px;">Default: Current Azora (June 26, 2026).</p>
-            </div>
-            <div class="settings-section">
                 <label class="settings-label">Themes</label>
                 <p class="settings-hint" style="margin-top:0;">This only changes colors. Chat, games, accounts, and buttons still work the same.</p>
                 <button type="button" id="oldAzoraThemeBtn" class="old-azora-theme-btn" onclick="applyOldAzoraTheme()">Change to old Azora (603blox Web)</button>
                 <p id="oldAzoraThemeStatus" class="settings-hint" style="margin-top:8px;"></p>
                 <p class="settings-hint">Or pick any other look:</p>
                 <div class="theme-grid" id="themeGridThemes"></div>
+            </div>
+        </div>
+
+        <div id="settingsPanelProtocols" class="settings-panel" style="display:none;">
+            <div class="settings-section">
+                <label class="settings-label">Timeline Split / Protocols</label>
+                <p class="settings-hint" style="margin-top:0;">This is not a color theme. A protocol changes layout and how tools work to match that year. Default is Current Azora (June 26, 2026).</p>
+                <select id="decadeSelect" class="settings-input" onchange="changeDecadeTheme(this.value)">
+                    <option value="2026">Current Azora (June 26, 2026)</option>
+                    <option value="2016">2016 Legacy Protocol</option>
+                    <option value="2006">2006 Web 1.0 Protocol</option>
+                    <option value="1996">1996 Retro Desktop Protocol</option>
+                    <option value="1986">1986 Terminal Protocol</option>
+                </select>
+                <p id="decadeThemeStatus" class="settings-hint" style="margin-top:8px;">Default: Current Azora (June 26, 2026).</p>
+                <button type="button" id="openForumBtn" class="settings-input" onclick="openAzoraForum()" style="display:none;margin-top:10px;">Open Community Forum</button>
             </div>
         </div>
 
@@ -543,6 +574,7 @@
     <canvas id="avatar2d-pixel" class="avatar-2d-pixel" width="48" height="64" aria-label="Pixel avatar"></canvas>
     <div class="customizer-controls">
         <h3>My Avatar</h3>
+        <button type="button" id="refreshAvatar2006" class="refresh-avatar-2006" onclick="refreshAvatarThumbnail()" style="display:none;">Refresh Avatar</button>
 
         <div class="closet-theme-picker" id="closetThemePicker">
             <span class="closet-theme-label">Closet vibe</span>
@@ -1636,7 +1668,7 @@
 
 <!-- Optional: trained Aturius brain (export from Azora account → Settings → Export code files) -->
 <script src="aturius-training-pack.js"></script>
-<script src="script.js?v=72.50"></script>
+<script src="script.js?v=72.51"></script>
 <script src="political-earth-data.js?v=72.24"></script>
 <script src="political-earth-hd.js?v=72.24"></script>
 <script src="political-earth-hyper.js?v=72.26"></script>
