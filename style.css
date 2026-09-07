@@ -7952,3 +7952,9 @@ a { color: var(--link, var(--accent-2)) !important; }
 .topbar, .topbar-shell { background: var(--topbar-grad, var(--topbar)) !important; color: var(--text-1) !important; }
 #coinsMenuBtn, .coins-menu-btn { background: var(--accent-2) !important; color: var(--text-1) !important; }
 .norm-game-hud, .norm-chat, .ll-toolbar { background: var(--popup-bg) !important; color: var(--text-1) !important; }
+.aturius-gen-img {
+    display: block;
+    max-width: min(280px, 80%);
+    border-radius: 12px;
+    margin: 8px 0;
+}

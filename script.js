@@ -11479,6 +11479,47 @@ function aturiusWatchTyping(input) {
 }
 window.aturiusWatchTyping = aturiusWatchTyping;
 
+function parseAturiusImageCommand(userText) {
+    var raw = String(userText || "").trim();
+    var m = raw.match(/^:?\s*generate\s+an?\s+images?\s+of\s+(.+)$/i);
+    if (!m) m = raw.match(/^:\s*generate\s+an?\s+images?\s+of\s+(.+)$/i);
+    if (!m || !m[1]) return null;
+    var prompt = String(m[1] || "").trim();
+    if (!prompt) {
+        return "Say it like this: :Generate a image of a yellow sphere in a park";
+    }
+    var check = moderateAturiusImagePrompt(prompt);
+    if (!check.ok) {
+        return "I can't make that picture. This test generator only allows kind, kid-safe ideas. Try animals, landscapes, cartoons, food, or space.";
+    }
+    var safePrompt = "kid friendly cartoon illustration, wholesome, no violence, no weapons, " + prompt;
+    var url = "https://image.pollinations.ai/prompt/" + encodeURIComponent(safePrompt) +
+        "?nologo=true&safe=true&model=flux";
+    return {
+        text: "Test image (filtered). If it looks wrong, try a simpler kid-safe description.",
+        imageUrl: url
+    };
+}
+
+function moderateAturiusImagePrompt(prompt) {
+    var t = (" " + String(prompt || "").toLowerCase() + " ")
+        .replace(/[^a-z0-9\s]/g, " ")
+        .replace(/\s+/g, " ");
+    var blocked = [
+        "nsfw","nude","naked","sexy","kiss","dating","boyfriend","girlfriend",
+        "blood","gore","kill","murder","dead","weapon","gun","knife","bomb",
+        "drug","smoke","alcohol","beer","wine","hate","racist","slur",
+        "suicide","harm","hurt myself","eqetech","bobby samanama"
+    ];
+    for (var i = 0; i < blocked.length; i++) {
+        if (t.indexOf(" " + blocked[i] + " ") !== -1 || t.indexOf(blocked[i]) !== -1) {
+            return { ok: false };
+        }
+    }
+    if (t.length < 3) return { ok: false };
+    return { ok: true };
+}
+
 function parseAturiusSayQuote(userText) {
     var raw = String(userText || "");
     if (!raw) return null;
@@ -11596,6 +11637,11 @@ function generateAIReply(userText, attachment) {
             return "Do not say that to me. I can see the box you are typing in. Every letter. Stop.";
         }
     } catch (eEq) {}
+
+    try {
+        var genImg = parseAturiusImageCommand(userText);
+        if (genImg) return genImg;
+    } catch (eImg) {}
 
     // ===== SAY "exact line" — repeat quoted text only =====
     try {
@@ -12600,6 +12646,7 @@ function scheduleAIReply(userText, aiChatId, attachment) {
         var aiMsg = { from: AZORA_AI_ID, text: reply, at: Date.now(), isAI: true };
         if (gameId) aiMsg.gameId = gameId;
         if (websiteId) aiMsg.websiteId = websiteId;
+        if (extra && extra.imageUrl) aiMsg.imageUrl = extra.imageUrl;
         chat.messages.push(aiMsg);
         chat.updatedAt = Date.now();
         saveAIChatStore(store);
@@ -14277,6 +14324,13 @@ function renderAturiusMessages() {
             // Render *action / story* segments as smaller bold text (asterisks hidden)
             aturiusFillStyledText(textNode, String(m.text || ""));
             div.appendChild(textNode);
+        }
+        if (m.imageUrl) {
+            var genImg = document.createElement("img");
+            genImg.src = m.imageUrl;
+            genImg.alt = "Generated picture";
+            genImg.className = "aturius-msg-img aturius-gen-img";
+            div.appendChild(genImg);
         }
         if (m.attachment) {
             var attWrap = document.createElement("div");
