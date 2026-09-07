@@ -15743,11 +15743,13 @@ function switchSettingsTab(tab) {
     var basic = document.getElementById("settingsPanelBasic");
     var themes = document.getElementById("settingsPanelThemes");
     var protocols = document.getElementById("settingsPanelProtocols");
+    var versions = document.getElementById("settingsPanelVersions");
     var security = document.getElementById("settingsPanelSecurity");
     var accounts = document.getElementById("settingsPanelAccounts");
     var tabBasic = document.getElementById("settingsTabBasic");
     var tabThemes = document.getElementById("settingsTabThemes");
     var tabProtocols = document.getElementById("settingsTabProtocols");
+    var tabVersions = document.getElementById("settingsTabVersions");
     var tabSecurity = document.getElementById("settingsTabSecurity");
     var tabAccounts = document.getElementById("settingsTabAccounts");
     if (!basic || !security) return;
@@ -15761,11 +15763,13 @@ function switchSettingsTab(tab) {
     if (basic) basic.style.display = "none";
     if (themes) themes.style.display = "none";
     if (protocols) protocols.style.display = "none";
+    if (versions) versions.style.display = "none";
     if (security) security.style.display = "none";
     if (accounts) accounts.style.display = "none";
     if (tabBasic) tabBasic.classList.remove("active");
     if (tabThemes) tabThemes.classList.remove("active");
     if (tabProtocols) tabProtocols.classList.remove("active");
+    if (tabVersions) tabVersions.classList.remove("active");
     if (tabSecurity) tabSecurity.classList.remove("active");
     if (tabAccounts) tabAccounts.classList.remove("active");
 
@@ -15780,6 +15784,12 @@ function switchSettingsTab(tab) {
         if (tabProtocols) tabProtocols.classList.add("active");
         var ds = document.getElementById("decadeSelect");
         if (ds) ds.value = getDecadeTheme();
+        return;
+    }
+    if (tab === "versions") {
+        if (versions) versions.style.display = "block";
+        if (tabVersions) tabVersions.classList.add("active");
+        try { fillAzoraVersionSelect(); } catch (eV) {}
         return;
     }
 
@@ -15936,6 +15946,69 @@ function changePassword() {
 }
 
 window.switchSettingsTab = switchSettingsTab;
+
+var AZORA_VERSION_IDS = ["current","1.0","1.1","2.0","3.0","4.0","5.0","6.0","7.0","8.0","9.0","10.0","10.11"];
+
+function fillAzoraVersionSelect() {
+    var sel = document.getElementById("azoraVersionSelect");
+    if (!sel) return;
+    sel.innerHTML = AZORA_VERSION_IDS.map(function (id) {
+        var label = id === "current" ? "Current Azora (this folder)" : ("Azora " + id);
+        return "<option value=\"" + id + "\">" + label + "</option>";
+    }).join("");
+}
+
+function azoraVersionPath(id) {
+    id = String(id || "").trim();
+    if (!id || id === "current") return "index.html";
+    id = id.replace(/\.\./g, "").replace(/[\\/]/g, "");
+    return "ExtraContent/Versions/" + id + "/index.html";
+}
+
+function launchAzoraVersion(id) {
+    if (id == null || id === "") {
+        var sel = document.getElementById("azoraVersionSelect");
+        id = sel ? sel.value : "current";
+    }
+    id = String(id || "current").trim();
+    var path = azoraVersionPath(id);
+    var st = document.getElementById("azoraVersionStatus");
+    if (id === "current") {
+        if (st) st.textContent = "Already on current Azora.";
+        location.href = "index.html";
+        return;
+    }
+    fetch(path, { cache: "no-store" }).then(function (res) {
+        if (!res.ok) throw new Error("missing");
+        if (st) st.textContent = "Opening Azora " + id + "…";
+        location.href = "version-player.html?v=" + encodeURIComponent(id);
+    }).catch(function () {
+        if (st) st.textContent = "No folder at " + path + ". Put that build in ExtraContent/Versions/" + id + "/ with index.html.";
+        alert("That version is not in ExtraContent/Versions yet.\n\nPut it here:\nAzora Assets/ExtraContent/Versions/" + id + "/index.html");
+    });
+}
+
+function scanAzoraVersions() {
+    var st = document.getElementById("azoraVersionStatus");
+    if (st) st.textContent = "Checking folders…";
+    var ids = AZORA_VERSION_IDS.filter(function (id) { return id !== "current"; });
+    Promise.all(ids.map(function (id) {
+        var path = azoraVersionPath(id);
+        return fetch(path, { cache: "no-store" }).then(function (res) {
+            return { id: id, ok: res.ok };
+        }).catch(function () { return { id: id, ok: false }; });
+    })).then(function (rows) {
+        var yes = rows.filter(function (r) { return r.ok; }).map(function (r) { return r.id; });
+        var no = rows.filter(function (r) { return !r.ok; }).map(function (r) { return r.id; });
+        if (st) {
+            st.textContent = (yes.length ? ("Found: " + yes.join(", ") + ". ") : "No version folders found yet. ") +
+                (no.length ? ("Missing: " + no.join(", ") + ".") : "");
+        }
+    });
+}
+window.launchAzoraVersion = launchAzoraVersion;
+window.scanAzoraVersions = scanAzoraVersions;
+window.fillAzoraVersionSelect = fillAzoraVersionSelect;
 window.changePassword = changePassword;
 window.refreshSecurityPanel = refreshSecurityPanel;
 

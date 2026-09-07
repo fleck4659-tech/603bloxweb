@@ -236,6 +236,7 @@
             <button type="button" class="settings-tab active" id="settingsTabBasic" onclick="switchSettingsTab('basic')">Basic Settings</button>
             <button type="button" class="settings-tab" id="settingsTabThemes" onclick="switchSettingsTab('themes')">Themes</button>
             <button type="button" class="settings-tab" id="settingsTabProtocols" onclick="switchSettingsTab('protocols')">Timeline Split</button>
+            <button type="button" class="settings-tab" id="settingsTabVersions" onclick="switchSettingsTab('versions')">Versions</button>
             <button type="button" class="settings-tab" id="settingsTabSecurity" onclick="switchSettingsTab('security')">Security</button>
             <button type="button" class="settings-tab" id="settingsTabAccounts" onclick="switchSettingsTab('accounts')">Accounts</button>
         </div>
@@ -415,6 +416,20 @@
                 </select>
                 <p id="decadeThemeStatus" class="settings-hint" style="margin-top:8px;">Default: Current Azora (June 26, 2026).</p>
                 <button type="button" id="openForumBtn" class="settings-input" onclick="openAzoraForum()" style="display:none;margin-top:10px;">Open Community Forum</button>
+            </div>
+        </div>
+
+        <div id="settingsPanelVersions" class="settings-panel" style="display:none;">
+            <div class="settings-section">
+                <label class="settings-label">Version Shelf</label>
+                <p class="settings-hint" style="margin-top:0;">This launches a real older build. Put each version in its own folder inside <code>Azora Assets/ExtraContent/Versions/</code>, like <code>ExtraContent/Versions/1.0/index.html</code> and <code>ExtraContent/Versions/10.11/index.html</code>.</p>
+                <select id="azoraVersionSelect" class="settings-input"></select>
+                <button type="button" onclick="launchAzoraVersion()" style="margin-top:8px;">Load this version</button>
+                <p id="azoraVersionStatus" class="settings-hint" style="margin-top:8px;"></p>
+                <p class="settings-hint">Custom folder name (must sit under versions/):</p>
+                <input id="azoraVersionCustom" class="settings-input" placeholder="example: 7.2">
+                <button type="button" onclick="launchAzoraVersion(document.getElementById('azoraVersionCustom').value)">Load custom folder</button>
+                <button type="button" onclick="scanAzoraVersions()" style="margin-top:8px;">Check which folders exist</button>
             </div>
         </div>
 
@@ -1672,7 +1687,7 @@
 
 <!-- Optional: trained Aturius brain (export from Azora account → Settings → Export code files) -->
 <script src="aturius-training-pack.js"></script>
-<script src="script.js?v=72.55"></script>
+<script src="script.js?v=72.59"></script>
 <script src="political-earth-data.js?v=72.24"></script>
 <script src="political-earth-hd.js?v=72.24"></script>
 <script src="political-earth-hyper.js?v=72.26"></script>
