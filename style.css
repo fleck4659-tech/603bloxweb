@@ -1,5 +1,13 @@
+@font-face {
+    font-family: "Javelin Obsidian";
+    src: url("javelin-obsidian-typeface-regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: "Javelin Obsidian", Arial, sans-serif;
     margin: 0;
     padding: 20px;
     padding-bottom: 80px;
@@ -863,6 +871,7 @@ body {
     /* Solid color only — edge wipe layers paint the animated background */
     background: var(--bg-2, #7c3aed) !important;
     color: var(--text-1) !important;
+    font-family: "Javelin Obsidian", Arial, sans-serif;
 }
 
 h1, h2, .topbar h2, .customizer-controls h3, .setting-info h3 {
