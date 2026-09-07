@@ -21324,7 +21324,8 @@ window.getPlatformAgeMonths = getPlatformAgeMonths;
 
 function getActiveAccount() {
     try {
-        if (localStorage.getItem("loggedIn") !== "true") return null;
+        var flag = localStorage.getItem("loggedIn");
+        if (flag !== "true" && flag !== "guest") return null;
         return JSON.parse(localStorage.getItem("azoraAccount") || "null");
     } catch (e) { return null; }
 }
@@ -28140,8 +28141,25 @@ window.loadNormCvbSettingsIntoUi = loadNormCvbSettingsIntoUi;
     }
     function meName() {
         try {
-            if (typeof currentUsername === "function") return currentUsername();
-        } catch (e) {}
+            var flag = localStorage.getItem("loggedIn");
+            if (flag === "true" || flag === "guest") {
+                var acc = null;
+                try { acc = JSON.parse(localStorage.getItem("azoraAccount") || "null"); } catch (e0) {}
+                if (acc && (acc.username || acc.displayName)) return String(acc.username || acc.displayName);
+            }
+        } catch (e1) {}
+        try {
+            if (typeof getActiveAccount === "function") {
+                var a = getActiveAccount();
+                if (a && a.username) return String(a.username);
+            }
+        } catch (e2) {}
+        try {
+            if (typeof currentUsername === "function") {
+                var n = currentUsername();
+                if (n) return String(n);
+            }
+        } catch (e3) {}
         return (window.currentUser && window.currentUser.username) || localStorage.getItem("azoraUsername") || "";
     }
     function isReviewer() {
@@ -29257,10 +29275,10 @@ function initEqetechAturius3D() {
     faceTex.minFilter = THREE.LinearFilter;
     faceTex.magFilter = THREE.LinearFilter;
     var faceMesh = new THREE.Mesh(
-        new THREE.PlaneGeometry(1.05, 1.05),
-        new THREE.MeshBasicMaterial({ map: faceTex, transparent: true, depthTest: true, depthWrite: false, alphaTest: 0.08, side: THREE.DoubleSide })
+        new THREE.PlaneGeometry(1.35, 1.35),
+        new THREE.MeshBasicMaterial({ map: faceTex, transparent: true, depthTest: true, depthWrite: false, side: THREE.DoubleSide })
     );
-    faceMesh.position.set(0, 0.04, 0.97);
+    faceMesh.position.set(0, 0.05, 1.25);
     var rig = new THREE.Group();
     rig.add(sphere);
     rig.add(faceMesh);
@@ -29296,10 +29314,10 @@ function playEqetechScene() {
         state.longMouth = Math.min(1, Math.max(0, (t - 1600) / 1000));
         state.closer = Math.min(1, Math.max(0, (t - 2200) / 900));
         if (world && world.camera) {
-            world.camera.position.set(0, 0, 3.4);
+            world.camera.position.set(0, 0, 3.4 - state.closer * 0.55);
             world.camera.lookAt(0, 0, 0);
-            if (world.rig) world.rig.scale.setScalar(1 + state.closer * 0.42);
-            if (world.rig) world.rig.position.y = -0.04 * state.closer;
+            if (world.rig) world.rig.scale.setScalar(1 + state.closer * 0.12);
+            if (world.rig) world.rig.position.y = 0;
             if (world.key) world.key.intensity = 1.1 - state.unhappy * 0.62;
             if (world.amb) world.amb.intensity = 0.65 - state.unhappy * 0.34;
             if (world.sphere && world.sphere.material) {
