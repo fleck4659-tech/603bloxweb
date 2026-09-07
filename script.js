@@ -7112,6 +7112,151 @@ function changeTheme(value) {
     applyTheme(value);
 }
 
+function getDecadeTheme() {
+    var d = localStorage.getItem("azoraDecade") || "2026";
+    if (["2026","2016","2006","1996","1986"].indexOf(d) < 0) d = "2026";
+    return d;
+}
+
+function applyDecadeTheme(year) {
+    year = String(year || "2026");
+    if (["2026","2016","2006","1996","1986"].indexOf(year) < 0) year = "2026";
+    localStorage.setItem("azoraDecade", year);
+    document.documentElement.setAttribute("data-decade", year);
+    var sel = document.getElementById("decadeSelect");
+    if (sel) sel.value = year;
+    var st = document.getElementById("decadeThemeStatus");
+    var labels = {
+        "2026": "Current Azora (June 26, 2026) — Mid Alpha.",
+        "2016": "June 26, 2016 — bright classic physics-game look.",
+        "2006": "June 26, 2006 — early web pages and static links.",
+        "1996": "June 26, 1996 — beige desktop and beveled buttons.",
+        "1986": "June 26, 1986 — type commands on a black-green screen."
+    };
+    if (st) st.textContent = labels[year] || "";
+    var coins = document.getElementById("bucks");
+    var wrap = document.getElementById("coinsMenuBtn");
+    if (wrap) {
+        wrap.classList.toggle("decade-coin-8bit", year === "1996");
+        wrap.classList.toggle("decade-coin-2016", year === "2016");
+    }
+    if (year === "1986") openAzoraDos();
+    else closeAzoraDos();
+}
+
+function changeDecadeTheme(year) {
+    applyDecadeTheme(year);
+}
+window.changeDecadeTheme = changeDecadeTheme;
+window.applyDecadeTheme = applyDecadeTheme;
+
+function azoraDosPrint(line) {
+    var log = document.getElementById("azoraDosLog");
+    if (!log) return;
+    log.textContent += String(line || "") + "\n";
+    log.scrollTop = log.scrollHeight;
+}
+
+function openAzoraDos() {
+    var ov = document.getElementById("azoraDosOverlay");
+    if (!ov) return;
+    ov.style.display = "flex";
+    ov.setAttribute("aria-hidden", "false");
+    var log = document.getElementById("azoraDosLog");
+    if (log && !log.dataset.booted) {
+        log.dataset.booted = "1";
+        log.textContent = "AZORA-DOS 1.0  (C) 1986 Azoraius Makes\nJune 26, 1986\nType HELP for commands. Type YEAR 2026 to leave.\n\n";
+    }
+    var inp = document.getElementById("azoraDosInput");
+    if (inp && !inp.dataset.bound) {
+        inp.dataset.bound = "1";
+        inp.addEventListener("keydown", function (ev) {
+            if (ev.key !== "Enter") return;
+            var cmd = String(inp.value || "").trim();
+            inp.value = "";
+            azoraDosPrint("C:\\AZORA> " + cmd);
+            runAzoraDosCommand(cmd);
+        });
+    }
+    setTimeout(function () { if (inp) inp.focus(); }, 50);
+}
+
+function closeAzoraDos() {
+    var ov = document.getElementById("azoraDosOverlay");
+    if (ov) {
+        ov.style.display = "none";
+        ov.setAttribute("aria-hidden", "true");
+    }
+}
+
+function runAzoraDosCommand(raw) {
+    var cmd = String(raw || "").trim();
+    var up = cmd.toUpperCase();
+    if (!up) return;
+    if (up === "HELP" || up === "?") {
+        azoraDosPrint("HELP        Show commands");
+        azoraDosPrint("DIR         List games");
+        azoraDosPrint("RUN NAME    Start a game  (example: RUN AZORA_ROLEPLAY.EXE)");
+        azoraDosPrint("AVATAR      Open character closet");
+        azoraDosPrint("COINS       Show AzoraCoins");
+        azoraDosPrint("FEED        Open the feed");
+        azoraDosPrint("CHAT        Open chat");
+        azoraDosPrint("SETTINGS    Open settings");
+        azoraDosPrint("YEAR 2026   Return to Current Azora");
+        return;
+    }
+    if (up === "DIR" || up === "LIST" || up === "GAMES") {
+        azoraDosPrint("AZORA_ROLEPLAY.EXE");
+        azoraDosPrint("BECOME_A_CAT.EXE");
+        azoraDosPrint("PARKOUR_PLAINS.EXE");
+        azoraDosPrint("COZY_CAFE.EXE");
+        azoraDosPrint("SKY_ISLANDS.EXE");
+        azoraDosPrint("PLANET_EMPIRE.EXE");
+        azoraDosPrint("AZORA_HOUSE.EXE");
+        azoraDosPrint("HORIZON_SPHERE.EXE");
+        return;
+    }
+    if (up.indexOf("YEAR ") === 0) {
+        var y = up.slice(5).trim();
+        applyDecadeTheme(y);
+        return;
+    }
+    if (up === "EXIT" || up === "QUIT") {
+        applyDecadeTheme("2026");
+        return;
+    }
+    if (up === "SETTINGS") { closeAzoraDos(); if (typeof openSettings === "function") openSettings(); switchSettingsTab("themes"); return; }
+    if (up === "FEED") { closeAzoraDos(); if (typeof openPublicFeed === "function") openPublicFeed(); return; }
+    if (up === "CHAT") { closeAzoraDos(); if (typeof openChatPanel === "function") openChatPanel(); return; }
+    if (up === "AVATAR" || up === "CLOSET") { closeAzoraDos(); return; }
+    if (up === "COINS") {
+        var n = document.getElementById("bucks");
+        azoraDosPrint("AZORACOINS = " + (n ? n.textContent : "0"));
+        return;
+    }
+    if (up.indexOf("RUN ") === 0) {
+        var file = up.slice(4).replace(".EXE","").replace(/-/g,"_").trim();
+        var map = {
+            "AZORA_ROLEPLAY":"azora-roleplay",
+            "BECOME_A_CAT":"become-a-cat",
+            "PARKOUR_PLAINS":"parkour-plains",
+            "COZY_CAFE":"cozy-cafe",
+            "SKY_ISLANDS":"sky-islands",
+            "PLANET_EMPIRE":"planet-empire",
+            "AZORA_HOUSE":"azora-house",
+            "HORIZON_SPHERE":"horizon-sphere"
+        };
+        var gid = map[file] || map[file.replace(/ /g,"_")];
+        if (gid && typeof joinNormGame === "function") {
+            azoraDosPrint("Launching " + file + ".EXE ...");
+            closeAzoraDos();
+            joinNormGame(gid);
+        } else azoraDosPrint("Bad command or file name.");
+        return;
+    }
+    azoraDosPrint("Bad command or file name.");
+}
+
 var _sparkleTimer = null;
 var _neonTimer = null;
 function applyThemeFx(id) {
@@ -7203,6 +7348,7 @@ function loadTheme() {
     const sel = document.getElementById("themeSelect");
     if (sel) sel.value = saved;
     applyTheme(saved);
+    try { applyDecadeTheme(getDecadeTheme()); } catch (eD) {}
 }
 
 window.changeTheme = changeTheme;

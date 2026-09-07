@@ -13,7 +13,7 @@
     <link rel="manifest" href="manifest-azora.json">
     <link rel="apple-touch-icon" href="logo.jpg?v=70.2">
     <link rel="icon" href="logo.jpg?v=70.2">
-    <link rel="stylesheet" href="style.css?v=72.23">
+    <link rel="stylesheet" href="style.css?v=72.24">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
@@ -24,6 +24,14 @@
     <div class="azora-bg-wave" id="azoraBgWave"></div>
 </div>
 <canvas id="azoraSparkleLayer" class="azora-sparkle-layer" width="800" height="600" aria-hidden="true"></canvas>
+
+<div id="azoraDosOverlay" class="azora-dos-overlay" style="display:none;" aria-hidden="true">
+    <pre id="azoraDosLog" class="azora-dos-log"></pre>
+    <div class="azora-dos-row">
+        <span>C:\AZORA&gt;</span>
+        <input id="azoraDosInput" type="text" autocomplete="off" spellcheck="false" aria-label="Azora command line">
+    </div>
+</div>
 
 <!-- Offline / no internet full-screen -->
 <div id="azoraOfflineScreen" class="azora-offline-screen" style="display:none;" aria-hidden="true" role="alert">
@@ -357,6 +365,18 @@
         </div>
 
         <div id="settingsPanelThemes" class="settings-panel" style="display:none;">
+            <div class="settings-section">
+                <label class="settings-label">Decade Time Machine</label>
+                <p class="settings-hint" style="margin-top:0;">See how Azora might have looked on June 26 in another decade. Games and accounts stay the same. Only the skin changes.</p>
+                <select id="decadeSelect" class="settings-input" onchange="changeDecadeTheme(this.value)">
+                    <option value="2026">Current Azora (June 26, 2026)</option>
+                    <option value="2016">June 26, 2016 — Classic Physics Game</option>
+                    <option value="2006">June 26, 2006 — Early Web</option>
+                    <option value="1996">June 26, 1996 — Retro Desktop</option>
+                    <option value="1986">June 26, 1986 — Command Line</option>
+                </select>
+                <p id="decadeThemeStatus" class="settings-hint" style="margin-top:8px;">Default: Current Azora (June 26, 2026).</p>
+            </div>
             <div class="settings-section">
                 <label class="settings-label">Themes</label>
                 <p class="settings-hint" style="margin-top:0;">This only changes colors. Chat, games, accounts, and buttons still work the same.</p>
@@ -1615,7 +1635,7 @@
 
 <!-- Optional: trained Aturius brain (export from Azora account → Settings → Export code files) -->
 <script src="aturius-training-pack.js"></script>
-<script src="script.js?v=72.48"></script>
+<script src="script.js?v=72.49"></script>
 <script src="political-earth-data.js?v=72.24"></script>
 <script src="political-earth-hd.js?v=72.24"></script>
 <script src="political-earth-hyper.js?v=72.26"></script>

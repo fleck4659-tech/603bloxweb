@@ -7675,3 +7675,130 @@ html[data-theme="sparkle"] button {
     color: #fff !important;
     border: 1px solid #e2e8f0 !important;
 }
+
+/* ===== Decade Time Machine ===== */
+.azora-dos-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    display: none;
+    flex-direction: column;
+    background: #000;
+    color: #39ff14;
+    font-family: "Courier New", Courier, monospace;
+    padding: 16px;
+}
+.azora-dos-log {
+    flex: 1;
+    margin: 0;
+    overflow: auto;
+    white-space: pre-wrap;
+    color: #39ff14;
+    font-size: 15px;
+}
+.azora-dos-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    color: #39ff14;
+    font-family: "Courier New", Courier, monospace;
+}
+.azora-dos-row input {
+    flex: 1;
+    background: #000;
+    border: 0;
+    color: #39ff14;
+    font-family: inherit;
+    font-size: 15px;
+    outline: none;
+}
+
+html[data-decade="2016"] body { background: #2e8ae6 !important; }
+html[data-decade="2016"] .topbar, html[data-decade="2016"] .topbar-shell {
+    background: #0d6bd8 !important;
+    border-bottom: 3px solid #fff !important;
+}
+html[data-decade="2016"] .topbar h2 { color: #fff !important; }
+html[data-decade="2016"] button {
+    background: linear-gradient(#6ec1ff, #0d6bd8) !important;
+    color: #fff !important;
+    border: 2px solid #fff !important;
+    border-radius: 6px !important;
+}
+html[data-decade="2016"] .avatar-customizer-container,
+html[data-decade="2016"] .news-card {
+    background: #fff !important;
+    border: 4px solid #0d6bd8 !important;
+    color: #123 !important;
+    border-radius: 0 !important;
+}
+html[data-decade="2016"] .coins-menu-btn.decade-coin-2016 {
+    background: #ffd400 !important;
+    color: #1a1a1a !important;
+    border: 2px solid #c9a000 !important;
+}
+
+html[data-decade="2006"] body {
+    background: #d4d0c8 !important;
+    font-family: Verdana, Geneva, sans-serif !important;
+}
+html[data-decade="2006"] .topbar, html[data-decade="2006"] .topbar-shell {
+    background: #000080 !important;
+    color: #fff !important;
+}
+html[data-decade="2006"] .topbar h2 { color: #fff !important; font-family: "Times New Roman", serif !important; }
+html[data-decade="2006"] .logo { image-rendering: pixelated; border-radius: 0 !important; }
+html[data-decade="2006"] button {
+    background: #ece9d8 !important;
+    color: #000 !important;
+    border: 1px solid #000 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+html[data-decade="2006"] a { color: #00e !important; text-decoration: underline !important; }
+html[data-decade="2006"] img { animation: decadeSlowLoad 1.6s linear; image-rendering: pixelated; }
+@keyframes decadeSlowLoad { from { opacity: 0.15; filter: contrast(0.6); } to { opacity: 1; filter: none; } }
+
+html[data-decade="1996"] body {
+    background-color: #008080 !important;
+    background-image: linear-gradient(#008080 12px, #007070 12px) !important;
+    background-size: 16px 16px !important;
+    font-family: "MS Sans Serif", Tahoma, sans-serif !important;
+}
+html[data-decade="1996"] .topbar, html[data-decade="1996"] .topbar-shell {
+    background: #000080 !important;
+    border-bottom: 2px outset #fff !important;
+}
+html[data-decade="1996"] button {
+    background: #c0c0c0 !important;
+    color: #000 !important;
+    border: 2px outset #fff !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+html[data-decade="1996"] button:active { border-style: inset !important; }
+html[data-decade="1996"] .overlay .popup,
+html[data-decade="1996"] .avatar-customizer-container,
+html[data-decade="1996"] .news-card {
+    background: #c0c0c0 !important;
+    border: 2px outset #fff !important;
+    color: #000 !important;
+}
+html[data-decade="1996"] .coins-menu-btn.decade-coin-8bit::before {
+    content: "■";
+    display: inline-block;
+    margin-right: 6px;
+    color: #ffd200;
+    animation: coinBlink 0.5s steps(2, end) infinite;
+}
+@keyframes coinBlink { 50% { opacity: 0.2; } }
+
+html[data-decade="1986"] body { background: #000 !important; color: #39ff14 !important; }
+html[data-decade="1986"] .topbar, html[data-decade="1986"] .topbar-shell {
+    background: #000 !important;
+    border-bottom: 1px solid #39ff14 !important;
+}
+html[data-decade="1986"] .topbar h2, html[data-decade="1986"] p, html[data-decade="1986"] h1 {
+    color: #39ff14 !important;
+    font-family: "Courier New", monospace !important;
+}
