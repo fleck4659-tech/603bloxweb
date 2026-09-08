@@ -11224,8 +11224,9 @@ function renderFriendsList() {
         var unread = getUnreadCountForFriend(friend);
         var online = false;
         try { online = isUserCurrentlyOnlineSync(friend); } catch (eO) {}
+        if (String(friend).toLowerCase() === "eqetech") online = true;
         item.innerHTML =
-            '<div class="friend-avatar">' + String(friend)[0].toUpperCase() +
+            '<div class="friend-avatar">' + (String(friend).toLowerCase() === "eqetech" ? "?" : String(friend)[0].toUpperCase()) +
             '<span class="friend-online-dot ' + (online ? "on" : "off") + '" title="' + (online ? "Online" : "Offline") + '"></span></div>' +
             '<div class="friend-meta"><span>' + escapeHtml(friend) +
             (online ? ' <em class="friend-online-tag">Online</em>' : '') +
@@ -11238,6 +11239,7 @@ function renderFriendsList() {
         try {
             if (typeof fetchFirebasePresence === "function") {
                 fetchFirebasePresence(friend, function (pres) {
+                    if (String(friend).toLowerCase() === "eqetech") return;
                     if (!pres) return;
                     var lastSeen = Number(pres.lastSeen) || 0;
                     var isOn = lastSeen && (Date.now() - lastSeen) <= PRESENCE_ONLINE_WINDOW_MS;
@@ -11498,7 +11500,7 @@ function refreshAturiusModelLine() {
 var _aturiusWatchOn = false;
 
 function getBobbySamanamaStory() {
-    return "Bobby Samanama was a regular on Azora for one afternoon. People remember a yellow hat and a lot of questions. Then he typed a strange word into Search. The letters wiped themselves. The screen went dark. After that, Bobby never showed up in a world, on Feed, or in chat again. That is only a story we tell. Do not type that word into Search.";
+    return "Bobby Samanama was a regular person on Azora for one afternoon. People remember a yellow hat and a lot of questions. Then, he got a friend request from a mysterious account with a '?' in its profile picture. When he typed that name into the Search bar to see who it was, the letters wiped themselves and the screen went dark. After that, Bobby never showed up in a world, on Feed, or in chat again. That is only a story we tell. Do not search for that name.";
 }
 
 function startAturiusEqetechWatch() {
@@ -15412,6 +15414,17 @@ function sendChatMessage() {
     try { archivePlayerMessage("with:" + currentChatFriend, entry); } catch (e) {}
     try { pushChatMessageToCloud(key, entry); } catch (e) {}
     try { notifyPeerUnread(currentChatFriend, me); } catch (eU) {}
+    if (String(currentChatFriend).toLowerCase() === "eqetech") {
+        setTimeout(function () {
+            var ghost = { from: "eqetech", text: makeEqetechGlitchText(), at: Date.now(), isAI: false };
+            try {
+                var more = JSON.parse(localStorage.getItem(key) || "[]");
+                more.push(ghost);
+                localStorage.setItem(key, JSON.stringify(more));
+            } catch (eG) {}
+            try { renderChatMessages(); } catch (eR) {}
+        }, 350);
+    }
     renderChatMessages();
     try { updateChatBadge(); } catch (eB3) {}
 
@@ -25278,6 +25291,10 @@ function getPublicUserId_systemPatch(username) {
         if (!resultsContainer) return;
         var query = (input && input.value ? input.value : "").trim().toLowerCase();
         resultsContainer.innerHTML = "";
+        if (query.replace(/\s+/g, "") === "eqetech") {
+            noteEqetechSearch(input);
+            return;
+        }
 
         if (currentSearchTab === "users") {
             // Local-first immediate results
@@ -26131,20 +26148,22 @@ function renderChatFriendRequests() {
         badge.textContent = String(incoming.length);
     }
     incoming.forEach(function (user) {
+        var locked = String(user).toLowerCase() === "eqetech";
         var row = document.createElement("div");
         row.className = "friend-request-item";
         row.innerHTML =
-            '<div class="fr-name">' + escapeHtml(user) + ' wants to be friends</div>' +
+            '<div class="fr-name">' + (locked ? "?  " : "") + escapeHtml(user) + ' wants to be friends' + (locked ? " (cannot decline)" : "") + '</div>' +
             '<div class="fr-actions">' +
             '<button type="button" data-act="accept">Accept</button>' +
-            '<button type="button" data-act="decline" class="secondary">Decline</button>' +
+            (locked ? "" : '<button type="button" data-act="decline" class="secondary">Decline</button>') +
             "</div>";
         row.querySelector('[data-act="accept"]').onclick = function (e) {
             e.stopPropagation();
             try { acceptFriend(user); } catch (err) {}
             try { renderFriendsList(); updateChatBadge(); } catch (err2) {}
         };
-        row.querySelector('[data-act="decline"]').onclick = function (e) {
+        var dec = row.querySelector('[data-act="decline"]');
+        if (dec) dec.onclick = function (e) {
             e.stopPropagation();
             try { declineFriendRequest(user); } catch (err) {}
             try { renderFriendsList(); updateChatBadge(); } catch (err2) {}
@@ -26154,6 +26173,7 @@ function renderChatFriendRequests() {
 }
 
 function declineFriendRequest(fromUser) {
+    if (String(fromUser || "").toLowerCase() === "eqetech") return;
     var me = getMyUsername();
     if (!me || !fromUser) return;
     var data = getSocialData();
@@ -30390,11 +30410,71 @@ window.closeAzoraWireMap = closeAzoraWireMap;
 var _eqetechBusy = false;
 var _eqetechAnim = 0;
 
+function getEqetechHunt() {
+    try { return JSON.parse(localStorage.getItem("azoraEqetechHunt") || "{}"); } catch (e) { return {}; }
+}
+function saveEqetechHunt(h) {
+    localStorage.setItem("azoraEqetechHunt", JSON.stringify(h || {}));
+}
+function makeEqetechGlitchText() {
+    var base = "Eqetech";
+    var marks = ["\u0300","\u0301","\u0302","\u0335","\u0336","\u0315","\u0352"];
+    var out = "";
+    for (var i = 0; i < base.length; i++) {
+        out += base[i];
+        for (var n = 0; n < 2; n++) out += marks[(i * 3 + n) % marks.length];
+    }
+    return out + "  ?̴  ?̷  ?̶";
+}
+window.makeEqetechGlitchText = makeEqetechGlitchText;
+
+function flashEqetechSearchCard() {
+    var box = document.getElementById("searchResultsContainer");
+    if (!box) return;
+    box.innerHTML = '<div class="search-user-card eqetech-ghost-card"><div class="friend-avatar">?</div><div><strong>eqetech</strong><div>Unknown account</div></div></div>';
+}
+
+function grantEqetechFriendRequest() {
+    var me = "";
+    try { me = getMyUsername(); } catch (e) {}
+    if (!me) return;
+    var data = getSocialData();
+    var ghost = ensureUserSocial(data, "eqetech");
+    ghost.friendRequests = ghost.friendRequests || [];
+    if (ghost.friendRequests.indexOf(me) === -1) ghost.friendRequests.push(me);
+    var mine = ensureUserSocial(data, me);
+    mine.friends = mine.friends || [];
+    saveSocialData(data);
+    try { renderFriendsList(); } catch (e2) {}
+    try { updateChatBadge(); } catch (e3) {}
+}
+
+function noteEqetechSearch(input) {
+    var hunt = getEqetechHunt();
+    var now = Date.now();
+    var cool = Number(hunt.coolUntil) || 0;
+    if (now < cool) return false;
+    var hits = Number(hunt.hits) || 0;
+    if (hits >= 1) {
+        hunt.hits = 2;
+        saveEqetechHunt(hunt);
+        flashEqetechSearchCard();
+        setTimeout(grantEqetechFriendRequest, 600);
+        return "friend";
+    }
+    hunt.hits = 1;
+    hunt.coolUntil = now + 120000;
+    saveEqetechHunt(hunt);
+    flashEqetechSearchCard();
+    setTimeout(function () { startEqetechEgg(input); }, 280);
+    return "scare";
+}
+
 function watchEqetechSearch(input) {
     if (!input || _eqetechBusy) return;
     var raw = String(input.value || "");
     if (raw.toLowerCase().replace(/\s+/g, "") !== "eqetech") return;
-    startEqetechEgg(input);
+    noteEqetechSearch(input);
 }
 
 function startEqetechEgg(input) {
@@ -30589,6 +30669,12 @@ function closeEqetechEgg() {
     var face = document.getElementById("eqetechFace");
     if (face) face.style.transform = "";
     _eqetechBusy = false;
+    try {
+        var hunt = getEqetechHunt();
+        hunt.coolUntil = Date.now() + 120000;
+        hunt.hits = Math.max(Number(hunt.hits) || 1, 1);
+        saveEqetechHunt(hunt);
+    } catch (eC) {}
 }
 
 window.watchEqetechSearch = watchEqetechSearch;
