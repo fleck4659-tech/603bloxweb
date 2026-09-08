@@ -25291,7 +25291,7 @@ function getPublicUserId_systemPatch(username) {
         if (!resultsContainer) return;
         var query = (input && input.value ? input.value : "").trim().toLowerCase();
         resultsContainer.innerHTML = "";
-        if (query.replace(/\s+/g, "") === "eqetech") {
+        if (typeof isEqetechQuery === "function" && isEqetechQuery(query)) {
             noteEqetechSearch(input);
             return;
         }
@@ -30449,37 +30449,68 @@ function grantEqetechFriendRequest() {
     try { updateChatBadge(); } catch (e3) {}
 }
 
+function isEqetechQuery(raw) {
+    var q = String(raw || "").toLowerCase().replace(/[^a-z]/g, "");
+    if (!q) return false;
+    if (q === "eqetech" || q === "eqetect" || q === "eqetehc" || q === "equeetch") return true;
+    if (q.length < 6 || q.length > 8) return false;
+    var target = "eqetech";
+    var i = 0, j = 0, miss = 0;
+    while (i < q.length && j < target.length) {
+        if (q[i] === target[j]) { i++; j++; }
+        else { miss++; i++; if (miss > 1) return false; }
+    }
+    miss += (q.length - i) + (target.length - j);
+    return miss <= 1;
+}
+
 function noteEqetechSearch(input) {
     var hunt = getEqetechHunt();
     var now = Date.now();
     var cool = Number(hunt.coolUntil) || 0;
-    if (now < cool) return false;
+    flashEqetechSearchCard();
     var hits = Number(hunt.hits) || 0;
+    if (now < cool) {
+        var box = document.getElementById("searchResultsContainer");
+        if (box) box.innerHTML += "<div class='no-results'>The letters will not stay.</div>";
+        if (input) {
+            var wipe = String(input.value || "");
+            var wipeStep = function () {
+                wipe = wipe.slice(0, -1);
+                input.value = wipe;
+                if (wipe) setTimeout(wipeStep, 70);
+            };
+            setTimeout(wipeStep, 80);
+        }
+        return "cool";
+    }
     if (hits >= 1) {
         hunt.hits = 2;
         saveEqetechHunt(hunt);
-        flashEqetechSearchCard();
-        setTimeout(grantEqetechFriendRequest, 600);
+        setTimeout(grantEqetechFriendRequest, 400);
         return "friend";
     }
     hunt.hits = 1;
-    hunt.coolUntil = now + 120000;
     saveEqetechHunt(hunt);
-    flashEqetechSearchCard();
     setTimeout(function () { startEqetechEgg(input); }, 280);
     return "scare";
 }
 
 function watchEqetechSearch(input) {
-    if (!input || _eqetechBusy) return;
-    var raw = String(input.value || "");
-    if (raw.toLowerCase().replace(/\s+/g, "") !== "eqetech") return;
+    if (!input) return;
+    if (!isEqetechQuery(input.value)) return;
+    if (_eqetechBusy) {
+        var ov = document.getElementById("eqetechOverlay");
+        if (!ov || ov.style.display === "none") _eqetechBusy = false;
+        else return;
+    }
     noteEqetechSearch(input);
 }
 
 function startEqetechEgg(input) {
     if (_eqetechBusy) return;
     _eqetechBusy = true;
+    if (!input) { playEqetechScene(); return; }
     var step = function () {
         var v = String(input.value || "");
         if (!v.length) {
