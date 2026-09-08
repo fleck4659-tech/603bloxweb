@@ -11560,42 +11560,149 @@ function moderateAturiusImagePrompt(prompt) {
     return { ok: true };
 }
 
+function understandAturiusClip(prompt) {
+    var low = String(prompt || "").toLowerCase();
+    var colorMap = {
+        red: "#ef4444", orange: "#f97316", yellow: "#facc15", gold: "#f59e0b",
+        green: "#22c55e", blue: "#3b82f6", purple: "#a855f7", pink: "#fb7185",
+        black: "#1f2937", white: "#f8fafc", brown: "#92400e", gray: "#9ca3af",
+        grey: "#9ca3af", teal: "#14b8a6"
+    };
+    var color = "#facc15";
+    Object.keys(colorMap).forEach(function (name) {
+        if (new RegExp("\\b" + name + "\\b").test(low)) color = colorMap[name];
+    });
+    var place = "park";
+    if (/\b(space|star|moon|galaxy|planet)\b/.test(low)) place = "space";
+    else if (/\b(ocean|sea|beach|fish)\b/.test(low)) place = "ocean";
+    else if (/\b(city|town|street|building)\b/.test(low)) place = "city";
+    else if (/\b(snow|winter|ice)\b/.test(low)) place = "snow";
+    else if (/\b(night|dark)\b/.test(low)) place = "night";
+    else if (/\b(halloween|pumpkin|spooky|bat)\b/.test(low)) place = "halloween";
+    else if (/\b(sunset|evening)\b/.test(low)) place = "sunset";
+    var actor = "sphere";
+    if (/\b(cat|kitten)\b/.test(low)) actor = "cat";
+    else if (/\b(dog|puppy)\b/.test(low)) actor = "dog";
+    else if (/\b(bird)\b/.test(low)) actor = "bird";
+    else if (/\b(fish)\b/.test(low)) actor = "fish";
+    else if (/\b(car|bus|truck)\b/.test(low)) actor = "car";
+    else if (/\b(house|home|cabin)\b/.test(low)) actor = "house";
+    else if (/\b(tree)\b/.test(low)) actor = "tree";
+    else if (/\b(pumpkin)\b/.test(low)) actor = "pumpkin";
+    else if (/\b(ghost)\b/.test(low)) actor = "ghost";
+    else if (/\b(robot)\b/.test(low)) actor = "robot";
+    else if (/\b(person|kid|friend|human)\b/.test(low)) actor = "kid";
+    else if (/\b(sphere|ball|orb)\b/.test(low)) actor = "sphere";
+    var move = "bounce";
+    if (/\b(fly|flying|float)\b/.test(low)) move = "fly";
+    else if (/\b(run|running|walk)\b/.test(low)) move = "run";
+    else if (/\b(spin|spinning)\b/.test(low)) move = "spin";
+    else if (/\b(swim|swimming)\b/.test(low)) move = "swim";
+    else if (/\b(wave)\b/.test(low)) move = "wave";
+    return { color: color, place: place, actor: actor, move: move, title: String(prompt).slice(0, 48) };
+}
+
 function buildAturiusClip(prompt) {
     return new Promise(function (resolve) {
         var canvas = document.createElement("canvas");
         canvas.width = 480;
         canvas.height = 270;
         var ctx = canvas.getContext("2d");
-        var low = String(prompt || "").toLowerCase();
-        var sky = "#7dd3fc";
-        if (/\b(space|star|moon|galaxy)\b/.test(low)) sky = "#0f172a";
-        else if (/\b(night)\b/.test(low)) sky = "#1e3a8a";
-        else if (/\b(ocean|sea|water)\b/.test(low)) sky = "#0284c7";
-        else if (/\b(park|grass|forest|tree)\b/.test(low)) sky = "#86efac";
-        else if (/\b(sunset)\b/.test(low)) sky = "#fdba74";
-        var ball = "#facc15";
+        var scene = understandAturiusClip(prompt);
         var start = Date.now();
-        var seconds = 3;
-        function draw(t) {
-            var p = t / seconds;
-            ctx.fillStyle = sky;
-            ctx.fillRect(0, 0, 480, 270);
-            if (sky === "#0f172a") {
-                ctx.fillStyle = "#fff";
-                for (var s = 0; s < 24; s++) ctx.fillRect((s * 37 + t * 30) % 480, (s * 17) % 240, 2, 2);
+        var seconds = 4;
+        function oval(x, y, rx, ry, fill) {
+            ctx.fillStyle = fill;
+            ctx.beginPath();
+            ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        function drawActor(x, y, rot) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rot || 0);
+            var c = scene.color;
+            if (scene.actor === "cat") {
+                oval(0, 0, 22, 16, c);
+                ctx.fillStyle = c;
+                ctx.beginPath(); ctx.moveTo(-16, -8); ctx.lineTo(-8, -24); ctx.lineTo(-2, -8); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(16, -8); ctx.lineTo(8, -24); ctx.lineTo(2, -8); ctx.fill();
+                ctx.fillStyle = "#111"; ctx.fillRect(-8, -4, 4, 4); ctx.fillRect(4, -4, 4, 4);
+            } else if (scene.actor === "dog") {
+                oval(0, 4, 24, 16, c);
+                oval(18, -6, 10, 8, c);
+                ctx.fillStyle = "#111"; ctx.fillRect(20, -8, 3, 3);
+            } else if (scene.actor === "bird") {
+                oval(0, 0, 16, 10, c);
+                ctx.fillStyle = "#f97316";
+                ctx.beginPath(); ctx.moveTo(16, 0); ctx.lineTo(26, -4); ctx.lineTo(16, 4); ctx.fill();
+            } else if (scene.actor === "fish") {
+                oval(0, 0, 22, 12, c);
+                ctx.beginPath(); ctx.moveTo(-22, 0); ctx.lineTo(-34, -10); ctx.lineTo(-34, 10); ctx.fill();
+            } else if (scene.actor === "car") {
+                ctx.fillStyle = c; ctx.fillRect(-28, -8, 56, 20);
+                ctx.fillRect(-12, -20, 28, 14);
+                ctx.fillStyle = "#111"; oval(-16, 12, 8, 8, "#111"); oval(16, 12, 8, 8, "#111");
+            } else if (scene.actor === "house") {
+                ctx.fillStyle = "#fef3c7"; ctx.fillRect(-24, -8, 48, 36);
+                ctx.fillStyle = c;
+                ctx.beginPath(); ctx.moveTo(-30, -8); ctx.lineTo(0, -36); ctx.lineTo(30, -8); ctx.fill();
+            } else if (scene.actor === "tree") {
+                ctx.fillStyle = "#92400e"; ctx.fillRect(-6, 0, 12, 28);
+                oval(0, -8, 22, 22, "#16a34a");
+            } else if (scene.actor === "pumpkin") {
+                oval(0, 4, 22, 18, "#f97316");
+                ctx.fillStyle = "#16a34a"; ctx.fillRect(-3, -18, 6, 10);
+            } else if (scene.actor === "ghost") {
+                oval(0, 0, 18, 22, "#f8fafc");
+                ctx.fillStyle = "#111"; ctx.fillRect(-8, -4, 5, 5); ctx.fillRect(4, -4, 5, 5);
+            } else if (scene.actor === "robot") {
+                ctx.fillStyle = c; ctx.fillRect(-16, -16, 32, 32);
+                ctx.fillStyle = "#111"; ctx.fillRect(-8, -8, 6, 6); ctx.fillRect(4, -8, 6, 6);
+            } else if (scene.actor === "kid") {
+                oval(0, -16, 10, 10, "#fde68a");
+                ctx.fillStyle = c; ctx.fillRect(-10, -6, 20, 22);
             } else {
-                ctx.fillStyle = "rgba(255,255,255,0.85)";
-                ctx.beginPath(); ctx.arc(80, 50, 22, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = "#4ade80";
-                ctx.fillRect(0, 210, 480, 60);
+                oval(0, 0, 22, 22, c);
+                ctx.fillStyle = "#111"; ctx.fillRect(-8, -6, 4, 4); ctx.fillRect(4, -6, 4, 4);
             }
-            var x = 60 + p * 320;
-            var y = 160 + Math.sin(p * Math.PI * 4) * 36;
-            ctx.fillStyle = ball;
-            ctx.beginPath(); ctx.arc(x, y, 28, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = "#111";
-            ctx.font = "16px sans-serif";
-            ctx.fillText(String(prompt).slice(0, 42), 16, 28);
+            ctx.restore();
+        }
+        function draw(t) {
+            var p = Math.min(1, t / seconds);
+            var skies = { park: "#7dd3fc", space: "#0f172a", ocean: "#0369a1", city: "#94a3b8", snow: "#e0f2fe", night: "#1e3a8a", halloween: "#431407", sunset: "#fdba74" };
+            ctx.fillStyle = skies[scene.place] || "#7dd3fc";
+            ctx.fillRect(0, 0, 480, 270);
+            if (scene.place === "space" || scene.place === "night") {
+                ctx.fillStyle = "#fff";
+                for (var s = 0; s < 28; s++) ctx.fillRect((s * 41 + t * 40) % 480, (s * 19) % 220, 2, 2);
+            } else if (scene.place === "ocean") {
+                ctx.fillStyle = "#38bdf8"; ctx.fillRect(0, 140, 480, 130);
+                ctx.fillStyle = "#fde68a"; ctx.fillRect(0, 200, 480, 70);
+            } else if (scene.place === "city") {
+                ctx.fillStyle = "#334155";
+                for (var b = 0; b < 8; b++) ctx.fillRect(20 + b * 58, 80 + (b % 3) * 20, 40, 160);
+            } else if (scene.place === "halloween") {
+                ctx.fillStyle = "#7c2d12"; ctx.fillRect(0, 200, 480, 70);
+            } else if (scene.place === "snow") {
+                ctx.fillStyle = "#fff"; ctx.fillRect(0, 200, 480, 70);
+                for (var f = 0; f < 20; f++) ctx.fillRect((f * 30 + t * 50) % 480, (f * 40 + t * 70) % 200, 3, 3);
+            } else {
+                ctx.fillStyle = "rgba(255,255,255,0.9)";
+                ctx.beginPath(); ctx.arc(80, 48, 20, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = "#4ade80"; ctx.fillRect(0, 200, 480, 70);
+            }
+            var x = 80, y = 170, rot = 0;
+            if (scene.move === "fly") { x = 70 + p * 320; y = 90 + Math.sin(p * 8) * 24; }
+            else if (scene.move === "run") { x = 60 + p * 340; y = 178; }
+            else if (scene.move === "spin") { x = 240; y = 160; rot = p * Math.PI * 6; }
+            else if (scene.move === "swim") { x = 50 + p * 360; y = 170 + Math.sin(p * 10) * 16; }
+            else if (scene.move === "wave") { x = 240; y = 160 + Math.sin(p * 10) * 10; }
+            else { x = 70 + p * 300; y = 168 + Math.abs(Math.sin(p * Math.PI * 5)) * -40; }
+            drawActor(x, y, rot);
+            ctx.fillStyle = scene.place === "space" || scene.place === "night" || scene.place === "halloween" ? "#ffe7c4" : "#111";
+            ctx.font = "15px sans-serif";
+            ctx.fillText(scene.title, 12, 24);
         }
         if (typeof MediaRecorder === "undefined" || !canvas.captureStream) {
             draw(1);
@@ -11693,7 +11800,13 @@ function matchAturiusExtraTalk(userText) {
         [["windows 95", "win95"],
          "1996 Retro Desktop Protocol turns Azora into a teal desktop with gray windows."],
         [["dos", "command line", "terminal"],
-         "1986 Terminal Protocol is a black-green screen. Type HELP or YEAR 2026 to leave."]
+         "1986 Terminal Protocol is a black-green screen. Type HELP or YEAR 2026 to leave."],
+        [["generate a video", "generate a clip", "make a video"],
+         "Type :Generate a video of and then what you want. One clip at a time. I read color, place, and who is in it. Keep it kid-safe."],
+        [["halloween"],
+         "Azora has a Halloween Update in Settings → Themes. Friendly spooky colors and bats. Your avatar stays the same."],
+        [["what can i ask", "ideas"],
+         "Ask how coins work, how to play Norm Games, or type :Generate a video of a blue cat flying in space."]
     ];
     for (var i = 0; i < pairs.length; i++) {
         var keys = pairs[i][0];
