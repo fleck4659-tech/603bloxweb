@@ -1,4 +1,12 @@
 @font-face {
+    font-family: "Azora Halloween";
+    src: url("halloween-font.ttf") format("truetype"),
+         url("javelin-obsidian-typeface-regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
     font-family: "Javelin Obsidian";
     src: url("javelin-obsidian-typeface-regular.ttf") format("truetype");
     font-weight: 400;
@@ -7965,4 +7973,53 @@ a { color: var(--link, var(--accent-2)) !important; }
     border-radius: 12px;
     margin: 8px 0;
     background: #000;
+}
+
+
+.azora-halloween-layer {
+    display: none;
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 8;
+    overflow: hidden;
+}
+.hallo-float {
+    position: absolute;
+    top: -30px;
+    animation: halloFall linear infinite;
+    opacity: 0.7;
+}
+@keyframes halloFall {
+    from { transform: translateY(0) rotate(0deg); }
+    to { transform: translateY(110vh) rotate(20deg); }
+}
+html.halloween body,
+body.halloween {
+    font-family: "Azora Halloween", "Javelin Obsidian", Arial, sans-serif !important;
+}
+html.halloween {
+    --bg-1: #1a0b24 !important;
+    --bg-2: #2b0f1a !important;
+    --bg-3: #3b0764 !important;
+    --text-1: #ffe7c4 !important;
+    --text-2: #fdba74 !important;
+    --accent: #f97316 !important;
+    --accent-2: #a855f7 !important;
+    --card-bg: rgba(24, 10, 20, 0.88) !important;
+    --card-border: #f97316 !important;
+    --topbar: #431407 !important;
+    --topbar-grad: linear-gradient(90deg, #431407, #6b21a8, #7c2d12) !important;
+    --popup-bg: rgba(20, 8, 16, 0.96) !important;
+    --footer: #1c1917 !important;
+    --banner: rgba(249, 115, 22, 0.28) !important;
+}
+html.halloween .topbar h2::after {
+    content: " · Halloween Update";
+    font-size: 0.55em;
+    color: #fdba74;
+}
+html.halloween #avatar3d-canvas,
+html.halloween #avatar3d-canvas * {
+    font-family: inherit;
 }

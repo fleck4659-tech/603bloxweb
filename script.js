@@ -7659,11 +7659,53 @@ function loadTheme() {
     if (sel) sel.value = saved;
     applyTheme(saved);
     try { applyDecadeTheme(getDecadeTheme()); } catch (eD) {}
+    try { applyHalloweenEvent(isHalloweenEventOn()); } catch (eH) {}
 }
 
 window.changeTheme = changeTheme;
 window.applyTheme = applyTheme;
 window.loadTheme = loadTheme;
+
+function isHalloweenEventOn() {
+    return localStorage.getItem("azoraHalloween") !== "off";
+}
+
+function setHalloweenEvent(on) {
+    localStorage.setItem("azoraHalloween", on ? "on" : "off");
+    applyHalloweenEvent(!!on);
+}
+window.setHalloweenEvent = setHalloweenEvent;
+
+function applyHalloweenEvent(on) {
+    document.documentElement.classList.toggle("halloween", !!on);
+    document.body.classList.toggle("halloween", !!on);
+    var tog = document.getElementById("halloweenEventToggle");
+    if (tog) tog.checked = !!on;
+    var ban = document.getElementById("azoraWelcomeBanner");
+    if (ban) {
+        ban.textContent = on
+            ? "Azora: Halloween Update · Friendly spooky season · Avatars stay yours"
+            : "Welcome to Azora! Play together · Build worlds · Style your avatar · Make friends";
+    }
+    var layer = document.getElementById("azoraHalloweenLayer");
+    if (layer) {
+        layer.style.display = on ? "block" : "none";
+        if (on && !layer.dataset.ready) {
+            layer.dataset.ready = "1";
+            var bits = ["🦇","🎃","🦇","🌙","🎃","✨","🦇"];
+            for (var i = 0; i < 18; i++) {
+                var s = document.createElement("span");
+                s.className = "hallo-float";
+                s.textContent = bits[i % bits.length];
+                s.style.left = (Math.random() * 100) + "%";
+                s.style.animationDuration = (8 + Math.random() * 10) + "s";
+                s.style.animationDelay = (-Math.random() * 12) + "s";
+                s.style.fontSize = (14 + Math.random() * 18) + "px";
+                layer.appendChild(s);
+            }
+        }
+    }
+}
 
 setInterval(function () {
     if ((localStorage.getItem("azoraTheme") || "auto") === "auto") {
