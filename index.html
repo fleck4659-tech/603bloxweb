@@ -13,7 +13,7 @@
     <link rel="manifest" href="manifest-azora.json">
     <link rel="apple-touch-icon" href="logo.jpg?v=70.2">
     <link rel="icon" href="logo.jpg?v=70.2">
-    <link rel="stylesheet" href="style.css?v=72.34">
+    <link rel="stylesheet" href="style.css?v=72.35">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
@@ -536,6 +536,9 @@
                 <div class="coins-drop-row"><span>Balance</span><strong><span id="coinsDropBalance">0</span> 🪙</strong></div>
                 <button type="button" class="coins-drop-item coins-drop-buy" onclick="openBuyAzoraCoins(); closeCoinsDropdown();">Buy AzoraCoins</button>
                 <button type="button" class="coins-drop-item" onclick="openPendingCoins()">Pending AzoraCoins <span id="coinsDropPending">0</span></button>
+                <div class="coins-drop-row"><span>HalloCoins</span><strong><span id="halloCoinBalance">0</span> 🎃</strong></div>
+                <div class="coins-drop-row"><span>HalloSeeds</span><strong><span id="halloSeedBalance">0</span> 🌱</strong></div>
+                <button type="button" class="coins-drop-item" onclick="openHalloConvert(); closeCoinsDropdown();">Convert coins</button>
                 <button type="button" class="coins-drop-item" onclick="openMarketplace(); closeCoinsDropdown();">Open Shop</button>
                 <button type="button" class="coins-drop-item" onclick="openCreateAd(); closeCoinsDropdown();">Create an Ad</button>
                 <button type="button" class="coins-drop-item" onclick="openInventory(); closeCoinsDropdown();">Open Inventory</button>
@@ -857,6 +860,15 @@
                     <span class="norm-game-meta">3D · Multiplayer · Explore</span>
                 </div>
                 <button type="button" class="norm-join-btn" onclick="joinNormGame('sky-islands')">Join</button>
+            </article>
+            <article class="norm-game-card" data-game-id="pumpkin-smash">
+                <div class="norm-game-icon">🎃</div>
+                <div class="norm-game-info">
+                    <h4>Pumpkin Smash</h4>
+                    <p><span class="by-creator">By Azora</span>. Tap pumpkins before they hop away. Earn free limited-time <strong>HalloSeeds</strong> for Halloween shop items.</p>
+                    <span class="norm-game-meta">Halloween · Tap · HalloSeeds</span>
+                </div>
+                <button type="button" class="norm-join-btn" onclick="openPumpkinSmash()">Play</button>
             </article>
             <article class="norm-game-card" data-game-id="living-lands">
                 <div class="norm-game-icon">🗺️</div>
@@ -1693,7 +1705,7 @@
 
 <!-- Optional: trained Aturius brain (export from Azora account → Settings → Export code files) -->
 <script src="aturius-training-pack.js"></script>
-<script src="script.js?v=72.66"></script>
+<script src="script.js?v=72.67"></script>
 <script src="political-earth-data.js?v=72.24"></script>
 <script src="political-earth-hd.js?v=72.24"></script>
 <script src="political-earth-hyper.js?v=72.26"></script>
@@ -1744,6 +1756,7 @@ if ("serviceWorker" in navigator) {
                     <option value="hair">Hair</option>
                     <option value="faces">Faces</option>
                     <option value="shirts">T-Shirts</option>
+                    <option value="halloween">Halloween</option>
                 </select>
             </label>
             <button type="button" id="uploadTShirtBtn" class="market-upload-btn" style="display:none;" onclick="openCreateTShirt()">📤 Upload T-Shirt (Free · 0 🪙)</button>
@@ -1770,6 +1783,28 @@ if ("serviceWorker" in navigator) {
     </div>
 </div>
 
+<div id="halloConvertOverlay" class="overlay" style="display:none;">
+    <div class="popup" style="max-width:420px;text-align:left;">
+        <h2 style="text-align:center;">Convert coins</h2>
+        <p class="settings-hint">HalloCoins are event coins. You can keep them as long as you like. After Nov 2, 2026 you can still hold them; the only extra action is converting to AzoraCoins if you want.</p>
+        <p>AzoraCoins: <strong id="convAz">0</strong> · HalloCoins: <strong id="convHallo">0</strong> · HalloSeeds: <strong id="convSeeds">0</strong></p>
+        <label>Amount <input id="halloConvertAmt" class="settings-input" type="number" min="1" value="1"></label>
+        <button type="button" onclick="convertAzoraToHallo()">AzoraCoins → HalloCoins</button>
+        <button type="button" onclick="convertHalloToAzora()">HalloCoins → AzoraCoins</button>
+        <button type="button" onclick="closeHalloConvert()" style="width:100%;margin-top:8px;">Close</button>
+    </div>
+</div>
+
+<div id="pumpkinSmashOverlay" class="overlay" style="display:none;">
+    <div class="popup" style="max-width:min(520px,96vw);text-align:center;">
+        <h2>Pumpkin Smash</h2>
+        <p id="pumpkinSmashHud">Time 30 · Smashed 0 · Seeds 0</p>
+        <canvas id="pumpkinSmashCanvas" width="480" height="280" style="width:100%;background:#1a0b24;border-radius:12px;touch-action:none;"></canvas>
+        <button type="button" onclick="startPumpkinSmash()">Start</button>
+        <button type="button" onclick="closePumpkinSmash()">Close</button>
+    </div>
+</div>
+
 <!-- Inventory -->
 <div id="inventoryOverlay" class="overlay" style="display:none;">
     <div class="popup market-popup" style="max-width:min(420px,calc(100vw - 16px));text-align:left;">
@@ -1781,6 +1816,7 @@ if ("serviceWorker" in navigator) {
                     <option value="hair">Hair</option>
                     <option value="faces">Faces</option>
                     <option value="shirts">T-Shirts</option>
+                    <option value="halloween">Halloween</option>
                 </select>
             </label>
         </div>

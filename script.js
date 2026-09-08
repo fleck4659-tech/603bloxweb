@@ -22818,6 +22818,188 @@ function openPendingCoins() {
 })();
 
 
+function halloEventCutoff() {
+    return new Date(2026, 10, 2, 0, 0, 0).getTime(); // Nov 2, 2026
+}
+function isHalloEventLive() {
+    return Date.now() < halloEventCutoff();
+}
+function getHalloCoins() {
+    try { return Math.max(0, Number(localStorage.getItem("azoraHalloCoins") || "0") || 0); } catch (e) { return 0; }
+}
+function setHalloCoins(n) {
+    n = Math.max(0, Math.round((Number(n) || 0) * 1000) / 1000);
+    try { localStorage.setItem("azoraHalloCoins", String(n)); } catch (e) {}
+    updateCoinsUI();
+    return n;
+}
+function getHalloSeeds() {
+    try { return Math.max(0, Number(localStorage.getItem("azoraHalloSeeds") || "0") || 0); } catch (e) { return 0; }
+}
+function setHalloSeeds(n) {
+    n = Math.max(0, Math.floor(Number(n) || 0));
+    try { localStorage.setItem("azoraHalloSeeds", String(n)); } catch (e) {}
+    updateCoinsUI();
+    return n;
+}
+function addHalloSeeds(n) { return setHalloSeeds(getHalloSeeds() + (Number(n) || 0)); }
+
+var HALLO_SHOP_ITEMS = [
+    { id: "hallo_hat_moon", name: "Moon Cap", priceSeeds: 8, desc: "A soft night cap with a tiny moon charm." },
+    { id: "hallo_cape_leaf", name: "Autumn Cape", priceSeeds: 12, desc: "Light cape with falling-leaf trim." },
+    { id: "hallo_lantern", name: "Kind Lantern", priceHallo: 3, desc: "Glows orange. Friendly, not scary." },
+    { id: "hallo_crown_seed", name: "Seed Crown", priceSeeds: 15, desc: "A crown grown from HalloSeeds." },
+    { id: "hallo_boots", name: "Pumpkin Boots", priceHallo: 5, desc: "Chunky orange boots for smash night." },
+    { id: "hallo_batbow", name: "Bat Bow", priceSeeds: 6, desc: "A bow with tiny cartoon bats." }
+];
+
+function openHalloConvert() {
+    var ov = document.getElementById("halloConvertOverlay");
+    if (ov) ov.style.display = "flex";
+    refreshHalloConvert();
+}
+function closeHalloConvert() {
+    var ov = document.getElementById("halloConvertOverlay");
+    if (ov) ov.style.display = "none";
+}
+function refreshHalloConvert() {
+    var a = document.getElementById("convAz");
+    var h = document.getElementById("convHallo");
+    var s = document.getElementById("convSeeds");
+    if (a) a.textContent = formatCoins(getCoins());
+    if (h) h.textContent = formatCoins(getHalloCoins());
+    if (s) s.textContent = String(getHalloSeeds());
+}
+function convertAzoraToHallo() {
+    if (!isHalloEventLive()) {
+        alert("You can keep HalloCoins, but you cannot make new ones after Nov 2, 2026. You may still convert HalloCoins into AzoraCoins if you want.");
+        return;
+    }
+    var amt = Math.max(1, Math.floor(Number((document.getElementById("halloConvertAmt") || {}).value || 1)));
+    if (getCoins() < amt) { alert("Not enough AzoraCoins."); return; }
+    setCoins(getCoins() - amt);
+    setHalloCoins(getHalloCoins() + amt);
+    refreshHalloConvert();
+    alert("Converted " + amt + " AzoraCoins into HalloCoins. You can keep them as long as you like.");
+}
+function convertHalloToAzora() {
+    var amt = Math.max(1, Math.floor(Number((document.getElementById("halloConvertAmt") || {}).value || 1)));
+    if (getHalloCoins() < amt) { alert("Not enough HalloCoins."); return; }
+    setHalloCoins(getHalloCoins() - amt);
+    setCoins(getCoins() + amt);
+    refreshHalloConvert();
+    alert("Converted " + amt + " HalloCoins into AzoraCoins.");
+}
+function buyHalloItem(id, pay) {
+    var item = null;
+    for (var i = 0; i < HALLO_SHOP_ITEMS.length; i++) if (HALLO_SHOP_ITEMS[i].id === id) item = HALLO_SHOP_ITEMS[i];
+    if (!item) return;
+    if (!isHalloEventLive()) { alert("Halloween shop buying ended Nov 2. You still keep coins and items you already have."); return; }
+    if (typeof ownsItem === "function" && ownsItem(id)) return;
+    if (pay === "seeds") {
+        if (getHalloSeeds() < (item.priceSeeds || 99)) return;
+        setHalloSeeds(getHalloSeeds() - item.priceSeeds);
+    } else {
+        if (getHalloCoins() < (item.priceHallo || 99)) return;
+        setHalloCoins(getHalloCoins() - item.priceHallo);
+    }
+    try { grantItem(id); } catch (e) {
+        try {
+            var inv = JSON.parse(localStorage.getItem("azoraInventory") || "[]");
+            if (inv.indexOf(id) === -1) inv.push(id);
+            localStorage.setItem("azoraInventory", JSON.stringify(inv));
+        } catch (e2) {}
+    }
+    alert("Got " + item.name + "!");
+    try { renderMarketplace(); } catch (e3) {}
+}
+window.openHalloConvert = openHalloConvert;
+window.closeHalloConvert = closeHalloConvert;
+window.convertAzoraToHallo = convertAzoraToHallo;
+window.convertHalloToAzora = convertHalloToAzora;
+window.buyHalloItem = buyHalloItem;
+
+var _pumpkins = [];
+var _pumpkinTimer = null;
+var _pumpkinLeft = 0;
+var _pumpkinScore = 0;
+function openPumpkinSmash() {
+    var ov = document.getElementById("pumpkinSmashOverlay");
+    if (ov) ov.style.display = "flex";
+}
+function closePumpkinSmash() {
+    if (_pumpkinTimer) { clearInterval(_pumpkinTimer); _pumpkinTimer = null; }
+    var ov = document.getElementById("pumpkinSmashOverlay");
+    if (ov) ov.style.display = "none";
+}
+function startPumpkinSmash() {
+    var canvas = document.getElementById("pumpkinSmashCanvas");
+    if (!canvas) return;
+    var ctx = canvas.getContext("2d");
+    _pumpkinLeft = 30;
+    _pumpkinScore = 0;
+    _pumpkins = [];
+    function spawn() {
+        _pumpkins.push({
+            x: 40 + Math.random() * (canvas.width - 80),
+            y: 40 + Math.random() * (canvas.height - 80),
+            r: 22 + Math.random() * 10,
+            life: 50
+        });
+    }
+    function draw() {
+        ctx.fillStyle = "#1a0b24";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#4ade80";
+        ctx.fillRect(0, canvas.height - 36, canvas.width, 36);
+        _pumpkins.forEach(function (p) {
+            ctx.fillStyle = "#f97316";
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "#16a34a";
+            ctx.fillRect(p.x - 3, p.y - p.r - 8, 6, 10);
+            ctx.fillStyle = "#111";
+            ctx.fillRect(p.x - 6, p.y - 4, 3, 3);
+            ctx.fillRect(p.x + 3, p.y - 4, 3, 3);
+        });
+    }
+    if (_pumpkinTimer) clearInterval(_pumpkinTimer);
+    spawn(); spawn();
+    _pumpkinTimer = setInterval(function () {
+        _pumpkinLeft -= 1;
+        _pumpkins.forEach(function (p) { p.life -= 1; });
+        _pumpkins = _pumpkins.filter(function (p) { return p.life > 0; });
+        if (_pumpkinLeft % 2 === 0) spawn();
+        draw();
+        var hud = document.getElementById("pumpkinSmashHud");
+        if (hud) hud.textContent = "Time " + _pumpkinLeft + " · Smashed " + _pumpkinScore + " · Seeds " + getHalloSeeds();
+        if (_pumpkinLeft <= 0) {
+            clearInterval(_pumpkinTimer);
+            _pumpkinTimer = null;
+            alert("Smash over! You keep " + _pumpkinScore + " HalloSeeds.");
+        }
+    }, 1000);
+    canvas.onclick = function (ev) {
+        var rect = canvas.getBoundingClientRect();
+        var x = (ev.clientX - rect.left) * (canvas.width / rect.width);
+        var y = (ev.clientY - rect.top) * (canvas.height / rect.height);
+        for (var i = _pumpkins.length - 1; i >= 0; i--) {
+            var p = _pumpkins[i];
+            var dx = x - p.x, dy = y - p.y;
+            if (dx * dx + dy * dy <= p.r * p.r) {
+                _pumpkins.splice(i, 1);
+                _pumpkinScore += 1;
+                addHalloSeeds(1);
+                draw();
+                break;
+            }
+        }
+    };
+    draw();
+}
+window.openPumpkinSmash = openPumpkinSmash;
+window.closePumpkinSmash = closePumpkinSmash;
+window.startPumpkinSmash = startPumpkinSmash;
+
 function updateCoinsUI() {
     try {
         var el = document.getElementById("bucks");
@@ -22826,6 +23008,15 @@ function updateCoinsUI() {
         if (bal) bal.textContent = formatCoins(getCoins());
         var mBal = document.getElementById("memberCoinBalance");
         if (mBal) mBal.textContent = formatCoins(getCoins());
+        var hc = document.getElementById("halloCoinBalance");
+        if (hc) hc.textContent = formatCoins(getHalloCoins());
+        var hs = document.getElementById("halloSeedBalance");
+        if (hs) hs.textContent = String(getHalloSeeds());
+        var btn = document.getElementById("coinsMenuBtn");
+        if (btn) {
+            var label = btn.childNodes[0];
+            btn.innerHTML = "🪙 AzoraCoins: <span id=\"bucks\">" + formatCoins(getCoins()) + "</span> ▾";
+        }
     } catch (e) {}
 }
 
@@ -23794,6 +23985,31 @@ function renderMarketplace() {
     var uploadBtn = document.getElementById("uploadTShirtBtn");
     if (uploadBtn) uploadBtn.style.display = (category === "shirts") ? "" : "none";
 
+    if (category === "halloween") {
+        HALLO_SHOP_ITEMS.forEach(function (item) {
+            var owned = ownsItem(item.id);
+            var seedPrice = item.priceSeeds || 0;
+            var halloPrice = item.priceHallo || 0;
+            var canSeed = seedPrice && getHalloSeeds() >= seedPrice && isHalloEventLive();
+            var canHallo = halloPrice && getHalloCoins() >= halloPrice && isHalloEventLive();
+            html += '<div class="market-card' + (owned ? " owned" : "") + '">';
+            html += '<div class="market-thumb-3d" aria-hidden="true"><div class="market-thumb-cube hallo"></div></div>';
+            html += '<div class="market-card-title">' + item.name + '</div>';
+            html += '<div class="market-card-meta">Halloween · <span class="by-creator">By Azora</span></div>';
+            html += '<div class="market-card-desc">' + (item.desc || "") + '</div>';
+            html += '<div class="market-card-footer"><span class="market-price">';
+            if (seedPrice) html += seedPrice + " 🌱 ";
+            if (halloPrice) html += halloPrice + " 🎃";
+            html += "</span>";
+            if (owned) html += ownedBtn();
+            else if (canSeed) html += '<button type="button" class="market-btn" onclick="buyHalloItem(\'' + item.id + '\',\'seeds\')">Buy with Seeds</button>';
+            else if (canHallo) html += '<button type="button" class="market-btn" onclick="buyHalloItem(\'' + item.id + '\',\'hallo\')">Buy with HalloCoins</button>';
+            else html += '<button type="button" class="market-btn disabled" disabled>' + (isHalloEventLive() ? "Need more" : "Event shop closed") + "</button>";
+            html += "</div></div>";
+        });
+        list.innerHTML = html || "<p>No Halloween items.</p>";
+        return;
+    }
     if (category === "aturius_hats" || category === "aturius_faces" || category === "aturius_colors") {
         var wantType = category === "aturius_hats" ? "aturius_hat" : (category === "aturius_faces" ? "aturius_face" : "aturius_color");
         ATURIUS_MARKET_CATALOG.forEach(function (item) {
@@ -23822,7 +24038,7 @@ function renderMarketplace() {
             var file = item.file || "Smile.png";
             html += '<div class="market-card market-card-face' + (owned ? " owned" : "") + '">';
             html += '<div class="market-face-row">';
-            html += '<div class="market-face-thumb" aria-hidden="true"><img src="' + file + '" alt="" loading="lazy" onerror="this.style.opacity=0.3"></div>';
+            html += '<div class="market-thumb-3d"><div class="market-face-thumb" aria-hidden="true"><img src="' + file + '" alt="" loading="lazy" onerror="this.style.opacity=0.3"></div></div>';
             html += '<div class="market-face-info">';
             html += '<div class="market-card-title">' + item.name + '</div>';
             html += '<div class="market-card-meta">Faces · <span class="by-creator">By Azora</span></div>';
