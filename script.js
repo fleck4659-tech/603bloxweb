@@ -10634,7 +10634,18 @@ function getAIChatStore() {
     return { chats: [], activeId: null };
 }
 function saveAIChatStore(store) {
-    localStorage.setItem("azoraAIChats", JSON.stringify(store));
+    try {
+        var copy = JSON.parse(JSON.stringify(store || {}));
+        (copy.chats || []).forEach(function (c) {
+            (c.messages || []).forEach(function (m) {
+                if (m.videoUrl && String(m.videoUrl).indexOf("blob:") === 0) delete m.videoUrl;
+                if (m.imageUrl && String(m.imageUrl).indexOf("blob:") === 0) delete m.imageUrl;
+            });
+        });
+        localStorage.setItem("azoraAIChats", JSON.stringify(copy));
+    } catch (e) {
+        try { localStorage.setItem("azoraAIChats", JSON.stringify(store)); } catch (e2) {}
+    }
 }
 function ensureActiveAIChat() {
     var store = getAIChatStore();
@@ -11605,8 +11616,8 @@ function understandAturiusClip(prompt) {
 function buildAturiusClip(prompt) {
     return new Promise(function (resolve) {
         var canvas = document.createElement("canvas");
-        canvas.width = 480;
-        canvas.height = 270;
+        canvas.width = 640;
+        canvas.height = 360;
         var ctx = canvas.getContext("2d");
         var scene = understandAturiusClip(prompt);
         var start = Date.now();
@@ -11672,33 +11683,60 @@ function buildAturiusClip(prompt) {
             var p = Math.min(1, t / seconds);
             var skies = { park: "#7dd3fc", space: "#0f172a", ocean: "#0369a1", city: "#94a3b8", snow: "#e0f2fe", night: "#1e3a8a", halloween: "#431407", sunset: "#fdba74" };
             ctx.fillStyle = skies[scene.place] || "#7dd3fc";
-            ctx.fillRect(0, 0, 480, 270);
+            ctx.fillRect(0, 0, 640, 360);
             if (scene.place === "space" || scene.place === "night") {
                 ctx.fillStyle = "#fff";
-                for (var s = 0; s < 28; s++) ctx.fillRect((s * 41 + t * 40) % 480, (s * 19) % 220, 2, 2);
+                for (var s = 0; s < 40; s++) ctx.fillRect((s * 47 + t * 50) % 640, (s * 23) % 300, 2, 2);
+                ctx.fillStyle = "#fde68a";
+                ctx.beginPath(); ctx.arc(540, 60, 28, 0, Math.PI * 2); ctx.fill();
             } else if (scene.place === "ocean") {
-                ctx.fillStyle = "#38bdf8"; ctx.fillRect(0, 140, 480, 130);
-                ctx.fillStyle = "#fde68a"; ctx.fillRect(0, 200, 480, 70);
+                ctx.fillStyle = "#38bdf8"; ctx.fillRect(0, 160, 640, 200);
+                ctx.fillStyle = "#0ea5e9";
+                for (var w = 0; w < 6; w++) {
+                    ctx.beginPath();
+                    ctx.ellipse((w * 120 + t * 40) % 700, 200 + Math.sin(t + w) * 6, 70, 10, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.fillStyle = "#fde68a"; ctx.fillRect(0, 300, 640, 60);
             } else if (scene.place === "city") {
-                ctx.fillStyle = "#334155";
-                for (var b = 0; b < 8; b++) ctx.fillRect(20 + b * 58, 80 + (b % 3) * 20, 40, 160);
+                ctx.fillStyle = "#1e293b";
+                for (var b = 0; b < 10; b++) {
+                    var bh = 90 + (b % 4) * 40;
+                    ctx.fillRect(16 + b * 62, 360 - bh - 40, 50, bh);
+                    ctx.fillStyle = "#facc15";
+                    for (var wy = 0; wy < 4; wy++) ctx.fillRect(26 + b * 62, 360 - bh - 20 + wy * 22, 8, 8);
+                    ctx.fillStyle = "#1e293b";
+                }
+                ctx.fillStyle = "#334155"; ctx.fillRect(0, 320, 640, 40);
             } else if (scene.place === "halloween") {
-                ctx.fillStyle = "#7c2d12"; ctx.fillRect(0, 200, 480, 70);
+                ctx.fillStyle = "#7c2d12"; ctx.fillRect(0, 280, 640, 80);
+                ctx.fillStyle = "#f97316";
+                for (var pk = 0; pk < 5; pk++) {
+                    ctx.beginPath(); ctx.ellipse(70 + pk * 120, 300, 16, 12, 0, 0, Math.PI * 2); ctx.fill();
+                }
             } else if (scene.place === "snow") {
-                ctx.fillStyle = "#fff"; ctx.fillRect(0, 200, 480, 70);
-                for (var f = 0; f < 20; f++) ctx.fillRect((f * 30 + t * 50) % 480, (f * 40 + t * 70) % 200, 3, 3);
+                ctx.fillStyle = "#fff"; ctx.fillRect(0, 280, 640, 80);
+                ctx.fillStyle = "#e2e8f0";
+                for (var f = 0; f < 28; f++) ctx.fillRect((f * 28 + t * 60) % 640, (f * 36 + t * 80) % 260, 4, 4);
             } else {
-                ctx.fillStyle = "rgba(255,255,255,0.9)";
-                ctx.beginPath(); ctx.arc(80, 48, 20, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = "#4ade80"; ctx.fillRect(0, 200, 480, 70);
+                ctx.fillStyle = "rgba(255,255,255,0.95)";
+                ctx.beginPath(); ctx.arc(90, 58, 26, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = "#86efac"; ctx.fillRect(0, 250, 640, 110);
+                ctx.fillStyle = "#22c55e";
+                ctx.beginPath(); ctx.moveTo(-20, 250); ctx.quadraticCurveTo(160, 200, 340, 250); ctx.lineTo(0, 250); ctx.fill();
+                ctx.fillStyle = "#16a34a";
+                for (var tr = 0; tr < 4; tr++) {
+                    ctx.fillRect(40 + tr * 150, 230, 10, 40);
+                    ctx.beginPath(); ctx.arc(45 + tr * 150, 220, 22, 0, Math.PI * 2); ctx.fill();
+                }
             }
-            var x = 80, y = 170, rot = 0;
-            if (scene.move === "fly") { x = 70 + p * 320; y = 90 + Math.sin(p * 8) * 24; }
-            else if (scene.move === "run") { x = 60 + p * 340; y = 178; }
-            else if (scene.move === "spin") { x = 240; y = 160; rot = p * Math.PI * 6; }
-            else if (scene.move === "swim") { x = 50 + p * 360; y = 170 + Math.sin(p * 10) * 16; }
-            else if (scene.move === "wave") { x = 240; y = 160 + Math.sin(p * 10) * 10; }
-            else { x = 70 + p * 300; y = 168 + Math.abs(Math.sin(p * Math.PI * 5)) * -40; }
+            var x = 80, y = 220, rot = 0;
+            if (scene.move === "fly") { x = 80 + p * 420; y = 110 + Math.sin(p * 8) * 28; }
+            else if (scene.move === "run") { x = 70 + p * 460; y = 240; }
+            else if (scene.move === "spin") { x = 320; y = 210; rot = p * Math.PI * 6; }
+            else if (scene.move === "swim") { x = 60 + p * 480; y = 210 + Math.sin(p * 10) * 18; }
+            else if (scene.move === "wave") { x = 320; y = 210 + Math.sin(p * 10) * 12; }
+            else { x = 80 + p * 400; y = 230 - Math.abs(Math.sin(p * Math.PI * 5)) * 50; }
             drawActor(x, y, rot);
             ctx.fillStyle = scene.place === "space" || scene.place === "night" || scene.place === "halloween" ? "#ffe7c4" : "#111";
             ctx.font = "15px sans-serif";
@@ -12871,9 +12909,13 @@ function scheduleAIReply(userText, aiChatId, attachment) {
         saveAIChatStore(store);
         try { renderAturiusMessages(); } catch (eR0) {}
         if (extra && extra.clipPrompt) {
+            aiMsg.clipPrompt = extra.clipPrompt;
+            saveAIChatStore(store);
             buildAturiusClip(extra.clipPrompt).then(function (url) {
                 if (!url) return;
-                if (/\.png|image\//.test(String(url).slice(0, 30)) || String(url).indexOf("data:image") === 0) aiMsg.imageUrl = url;
+                window._aturiusClipCache = window._aturiusClipCache || {};
+                window._aturiusClipCache[extra.clipPrompt] = url;
+                if (String(url).indexOf("data:image") === 0) aiMsg.imageUrl = url;
                 else aiMsg.videoUrl = url;
                 aiMsg.text = "Here's a short cartoon clip (test, filtered).";
                 saveAIChatStore(store);
@@ -14561,15 +14603,28 @@ function renderAturiusMessages() {
             genImg.className = "aturius-msg-img aturius-gen-img";
             div.appendChild(genImg);
         }
-        if (m.videoUrl) {
+        if (m.videoUrl || m.clipPrompt) {
             var vid = document.createElement("video");
-            vid.src = m.videoUrl;
             vid.controls = true;
             vid.autoplay = true;
             vid.loop = true;
             vid.muted = true;
             vid.playsInline = true;
             vid.className = "aturius-gen-vid";
+            vid.setAttribute("aria-label", "Cartoon clip");
+            var cached = window._aturiusClipCache && m.clipPrompt && window._aturiusClipCache[m.clipPrompt];
+            var src = cached || ((m.videoUrl && String(m.videoUrl).indexOf("blob:") !== 0) ? m.videoUrl : "");
+            if (src) vid.src = src;
+            else if (m.clipPrompt) {
+                vid.style.background = "#1f2937";
+                buildAturiusClip(m.clipPrompt).then(function (url) {
+                    if (!url) return;
+                    window._aturiusClipCache = window._aturiusClipCache || {};
+                    window._aturiusClipCache[m.clipPrompt] = url;
+                    vid.src = url;
+                    try { vid.play(); } catch (eP) {}
+                });
+            }
             div.appendChild(vid);
         }
         if (m.attachment) {
