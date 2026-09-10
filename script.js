@@ -183,40 +183,22 @@ function applyDefaultBodyShapeToMeshes(gender, avatar, meshes) {
     } catch (eR) {}
 
     if (useGirl) {
-        // Slim feminine blocky — narrower shoulders, not bulkier
-        if (head) head.scale.set(0.95, 0.95, 0.95);
-        if (torso) torso.scale.set(0.88, 1.02, 0.95);
-        if (la) {
-            la.scale.set(0.88, 0.98, 0.88);
-            if (la.position) la.position.x = -0.50;
+        if (head) head.scale.set(1, 1, 1);
+        if (torso) {
+            torso.scale.set(1, 1, 1);
+            applyGirlTorsoCut(torso, 0.78, 1.12, 0.42);
         }
-        if (ra) {
-            ra.scale.set(0.88, 0.98, 0.88);
-            if (ra.position) ra.position.x = 0.50;
-        }
-        if (ll) {
-            ll.scale.set(0.88, 1.02, 0.88);
-            if (ll.position) ll.position.x = -0.14;
-        }
-        if (rl) {
-            rl.scale.set(0.88, 1.02, 0.88);
-            if (rl.position) rl.position.x = 0.14;
-        }
-        try {
-            if (group && typeof THREE !== "undefined") {
-                var flareMat = (typeof azoraGlossMaterial === "function")
-                    ? azoraGlossMaterial((avatar && avatar.torso) || "#db2777")
-                    : new THREE.MeshLambertMaterial({ color: (avatar && avatar.torso) || "#db2777" });
-                var flare = new THREE.Mesh(((typeof azoraRoundedBoxGeometry==="function")?azoraRoundedBoxGeometry(0.82,0.24,0.46,0.06):new THREE.BoxGeometry(0.82,0.24,0.46)), flareMat);
-                flare.name = "girlHipFlare";
-                flare.position.set(0, -0.02, 0);
-                group.add(flare);
-            }
-        } catch (eF) {}
+        if (la) { la.scale.set(1, 1, 1); if (la.position) la.position.x = -0.56; }
+        if (ra) { ra.scale.set(1, 1, 1); if (ra.position) ra.position.x = 0.56; }
+        if (ll) { ll.scale.set(1, 1, 1); if (ll.position) ll.position.x = -0.18; }
+        if (rl) { rl.scale.set(1, 1, 1); if (rl.position) rl.position.x = 0.18; }
     } else {
         // Boy / neutral base positions matching init3DAvatar
         if (head) head.scale.set(1, 1, 1);
-        if (torso) torso.scale.set(1, 1, 1);
+        if (torso) {
+            torso.scale.set(1, 1, 1);
+            applyBoyTorsoBox(torso, 0.78, 1.12, 0.42);
+        }
         if (la) {
             la.scale.set(1, 1, 1);
             if (la.position) la.position.x = -0.56;
@@ -3759,6 +3741,48 @@ function azoraRoundedBoxGeometry(w, h, d, radius) {
 }
 window.azoraRoundedBoxGeometry = azoraRoundedBoxGeometry;
 
+function azoraGirlCutTorsoGeometry(w, h, d) {
+    w = w || 0.78; h = h || 1.12; d = d || 0.42;
+    if (typeof THREE === "undefined") return new THREE.BoxGeometry(w, h, d);
+    var hx = w / 2, hy = h / 2;
+    var cut = w * 0.30;
+    var band = h * 0.18;
+    var shape = new THREE.Shape();
+    shape.moveTo(-hx, hy);
+    shape.lineTo(hx, hy);
+    shape.lineTo(hx, band);
+    shape.lineTo(hx - cut, 0);
+    shape.lineTo(hx, -band);
+    shape.lineTo(hx, -hy);
+    shape.lineTo(-hx, -hy);
+    shape.lineTo(-hx, -band);
+    shape.lineTo(-hx + cut, 0);
+    shape.lineTo(-hx, band);
+    shape.closePath();
+    var geo = new THREE.ExtrudeGeometry(shape, { depth: d, bevelEnabled: false, steps: 1 });
+    geo.translate(0, 0, -d / 2);
+    geo.computeVertexNormals();
+    return geo;
+}
+window.azoraGirlCutTorsoGeometry = azoraGirlCutTorsoGeometry;
+
+function applyGirlTorsoCut(mesh, w, h, d) {
+    if (!mesh || typeof THREE === "undefined") return;
+    w = w || 0.78; h = h || 1.12; d = d || 0.42;
+    try { if (mesh.geometry) mesh.geometry.dispose(); } catch (e) {}
+    mesh.geometry = azoraGirlCutTorsoGeometry(w, h, d);
+}
+
+function applyBoyTorsoBox(mesh, w, h, d) {
+    if (!mesh || typeof THREE === "undefined") return;
+    w = w || 0.78; h = h || 1.12; d = d || 0.42;
+    try { if (mesh.geometry) mesh.geometry.dispose(); } catch (e) {}
+    var radius = Math.min(w, h, d) * 0.08;
+    mesh.geometry = (typeof azoraRoundedBoxGeometry === "function")
+        ? azoraRoundedBoxGeometry(w, h, d, radius)
+        : new THREE.BoxGeometry(w, h, d);
+}
+
 function makeBox(w, h, d, color) {
     var radius = Math.min(w, h, d) * 0.1;
     return new THREE.Mesh(
@@ -4126,6 +4150,7 @@ function buildBlockyAvatarMeshes(gender, colors) {
     torsoMesh = makeBox(0.78, 1.12, 0.42, torsoC);
     torsoMesh.name = "torso";
     torsoMesh.position.y = 0.42;
+    if (gender === "girl") applyGirlTorsoCut(torsoMesh, 0.78, 1.12, 0.42);
     avatarCharacterGroup.add(torsoMesh);
 
     // Short neck — mostly hidden under the head, a sliver still shows
@@ -17275,14 +17300,15 @@ function makeNormAvatar(colors) {
     var gender = colors.gender || "boy";
     var isGirl = (gender === "girl" || gender === "female");
     var girlDefault = isGirl && (typeof isDefaultGirlBody !== "function" || isDefaultGirlBody(colors, gender));
-    var armX = girlDefault ? 0.50 : 0.56;
-    var legX = girlDefault ? 0.14 : 0.18;
-    var armThick = girlDefault ? 0.26 : 0.30;
-    var legThick = girlDefault ? 0.26 : 0.30;
-    var torsoW = girlDefault ? 0.68 : 0.78;
+    var armX = 0.56;
+    var legX = 0.18;
+    var armThick = 0.30;
+    var legThick = 0.30;
+    var torsoW = 0.78;
 
-    // Torso
+    // Torso — girl uses same cube with two inward triangle cuts
     var torso = box(torsoW, torsoH, 0.42, colors.torso);
+    if (isGirl) applyGirlTorsoCut(torso, torsoW, torsoH, 0.42);
     torso.position.y = legH + torsoH / 2;
     torso.name = "torso";
     g.add(torso);
@@ -17335,17 +17361,7 @@ function makeNormAvatar(colors) {
     var leftLegPivot = addLimbPivot("leftLegPivot", "leftLeg", -legX, hipY, legH, legThick, colors.leftLeg);
     var rightLegPivot = addLimbPivot("rightLegPivot", "rightLeg", legX, hipY, legH, legThick, colors.rightLeg);
 
-    if (girlDefault) {
-        try {
-            var flareMat = (typeof azoraGlossMaterial === "function")
-                ? azoraGlossMaterial(colors.torso || "#db2777")
-                : new THREE.MeshLambertMaterial({ color: colors.torso || "#db2777" });
-            var flare = new THREE.Mesh(((typeof azoraRoundedBoxGeometry==="function")?azoraRoundedBoxGeometry(0.82,0.24,0.46,0.06):new THREE.BoxGeometry(0.82,0.24,0.46)), flareMat);
-            flare.name = "girlHipFlare";
-            flare.position.set(0, legH + 0.10, 0);
-            g.add(flare);
-        } catch (eFl) {}
-    }
+    // girl torso cut is already applied on the cube; no extra hip piece
     // Hair only if explicitly equipped (not default) — both genders bald on default
     try {
         var hs = colors.hairStyle || "";
