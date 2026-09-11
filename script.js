@@ -108,7 +108,7 @@ function defaultAvatarForGender(gender) {
             leftLeg: "#6d28d9",
             rightLeg: "#6d28d9",
             hair: "#4a3728",
-            hairStyle: "hair_boy_none",
+            hairStyle: "hair_girl_long",
             face: "female",
             faceFile: "female_smile.png",
             bodyShape: "girl_default"
@@ -3922,7 +3922,19 @@ function makeAvatarHair(hairColor, headY, headSize, styleId) {
     }
 
     // ---- Girl styles ----
-    if (styleId === "hair_girl_default") {
+    if (styleId === "hair_girl_long" || styleId === "hair_girl_default" || styleId === "hair_realistic_girl") {
+        addPart("hairCap", 0, headY + headSize * 0.40, -0.02, headSize * 1.22, headSize * 0.42, headSize * 1.18);
+        addPart("hairCrown", 0, headY + headSize * 0.52, -0.04, headSize * 0.95, headSize * 0.22, headSize * 0.95);
+        addPart("hairBangs", 0, headY + headSize * 0.20, headSize * 0.44, headSize * 1.02, headSize * 0.22, headSize * 0.24);
+        addPart("hairBangL", -headSize * 0.28, headY + headSize * 0.08, headSize * 0.42, headSize * 0.34, headSize * 0.28, headSize * 0.18);
+        addPart("hairBangR", headSize * 0.28, headY + headSize * 0.08, headSize * 0.42, headSize * 0.34, headSize * 0.28, headSize * 0.18);
+        addPart("hairSideL", -headSize * 0.60, headY - headSize * 0.55, 0.04, headSize * 0.30, headSize * 1.55, headSize * 0.32);
+        addPart("hairSideR", headSize * 0.60, headY - headSize * 0.55, 0.04, headSize * 0.30, headSize * 1.55, headSize * 0.32);
+        addPart("hairBack", 0, headY - headSize * 0.15, -headSize * 0.46, headSize * 1.12, headSize * 1.05, headSize * 0.42);
+        addPart("hairFlow1", 0, headY - headSize * 0.85, -headSize * 0.38, headSize * 0.95, headSize * 1.15, headSize * 0.34);
+        addPart("hairFlow2", 0, headY - headSize * 1.25, -headSize * 0.28, headSize * 0.78, headSize * 0.95, headSize * 0.30);
+        addPart("hairTip", 0, headY - headSize * 1.62, -headSize * 0.18, headSize * 0.48, headSize * 0.55, headSize * 0.24);
+    } else if (styleId === "hair_girl_default_old") {
         addPart("hairCap", 0, headY + headSize * 0.38, -0.02, headSize * 1.18, headSize * 0.38, headSize * 1.12);
         addPart("hairBack", 0, headY + headSize * 0.05, -headSize * 0.42, headSize * 1.05, headSize * 0.7, headSize * 0.4);
         addPart("hairBangs", 0, headY + headSize * 0.22, headSize * 0.4, headSize * 0.95, headSize * 0.2, headSize * 0.2);
@@ -4023,6 +4035,9 @@ function applyGenderVisualsToCustomizer(gender, colors) {
     if (!styleId) styleId = (colors && colors.hairStyle) || "hair_boy_none";
     var hairCol = (colors && colors.hair) || "#4a3728";
     var isGirl = (gender === "girl" || gender === "female");
+    if (isGirl && (!styleId || styleId === "hair_boy_none" || styleId === "none" || styleId === "hair_girl_default")) {
+        styleId = "hair_girl_long";
+    }
     if (realistic) {
         // Realistic: shop hair if equipped, else soft girl hair when girl
         var hasShop = styleId && styleId !== "hair_boy_none" && styleId !== "none" && styleId !== "hair_girl_default";
@@ -4041,8 +4056,6 @@ function applyGenderVisualsToCustomizer(gender, colors) {
             if (rh) { if (hj) hj.add(rh); else avatarCharacterGroup.add(rh); }
         }
     } else {
-        // Blocky: both bald by default unless marketplace hair equipped
-        if (styleId === "hair_girl_default") styleId = "hair_boy_none";
         if (styleId && styleId !== "hair_boy_none" && styleId !== "none") {
             var hy2 = headMesh ? headMesh.position.y : 1.28;
             var hair2 = makeAvatarHair(hairCol, hy2, 0.65, styleId);
@@ -17367,7 +17380,8 @@ function makeNormAvatar(colors) {
     // Hair only if explicitly equipped (not default) — both genders bald on default
     try {
         var hs = colors.hairStyle || "";
-        if (hs && hs !== "hair_boy_none" && hs !== "none" && hs !== "hair_girl_default") {
+        if (isGirl && (!hs || hs === "hair_boy_none" || hs === "none" || hs === "hair_girl_default")) hs = "hair_girl_long";
+        if (hs && hs !== "hair_boy_none" && hs !== "none") {
             var hairY = head.position.y;
             var hair = makeAvatarHair(colors.hair || "#4a3728", hairY, headS, hs);
             if (hair) g.add(hair);
@@ -22342,7 +22356,7 @@ function onCustomizerGenderChange() {
         if (gender === "girl" && (!acc.avatar.hair)) acc.avatar.hair = "#4a3728";
         if (gender === "girl") acc.avatar.hairStyle = acc.avatar.hairStyle || "hair_realistic_girl";
         else if (acc.avatar.hairStyle === "hair_realistic_girl" || acc.avatar.hairStyle === "hair_girl_default") {
-            acc.avatar.hairStyle = "hair_boy_none";
+            acc.avatar.hairStyle = "hair_girl_long";
         }
         var raw = typeof readAvatarColorInputs === "function" ? readAvatarColorInputs() : {};
         var cols = Object.assign({}, acc.avatar, raw, { gender: gender });
@@ -24081,9 +24095,9 @@ function renderMarketplace() {
             var thumbSrc = item.imageData || item.file || "";
             html += '<div class="market-card market-card-face' + (owned ? " owned" : "") + '">';
             html += '<div class="market-face-row">';
-            html += '<div class="market-face-thumb market-shirt-thumb" aria-hidden="true">';
+            html += '<div class="market-thumb-3d"><div class="market-face-thumb market-shirt-thumb" aria-hidden="true">';
             if (thumbSrc) html += '<img src="' + thumbSrc + '" alt="" loading="lazy" onerror="this.style.opacity=0.3">';
-            html += '</div>';
+            html += '</div></div>';
             html += '<div class="market-face-info">';
             html += '<div class="market-card-title">' + (item.name || "T-Shirt") + '</div>';
             html += '<div class="market-card-meta">T-Shirts · <span class="by-creator">By ' + by + '</span></div>';
@@ -24104,6 +24118,7 @@ function renderMarketplace() {
             var canBuy = !owned && !isOwner && (item.price === 0 || coins >= item.price);
             var priceLabel = item.price === 0 ? "Free" : (formatCoins(item.price) + " 🪙");
             html += '<div class="market-card' + (owned ? " owned" : "") + '">';
+            html += '<div class="market-thumb-3d"><div class="market-spin-thumb hair-spin ' + (item.gender || "") + '"></div></div>';
             html += '<div class="market-card-title">' + item.name + '</div>';
             html += '<div class="market-card-meta">Hair · <span class="by-creator">By Azora</span>' +
                 (item.gender === "girl" ? " · Girl" : (item.gender === "boy" ? " · Boy" : "")) + '</div>';
