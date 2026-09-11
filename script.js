@@ -186,7 +186,7 @@ function applyDefaultBodyShapeToMeshes(gender, avatar, meshes) {
         if (head) head.scale.set(1, 1, 1);
         if (torso) {
             torso.scale.set(1, 1, 1);
-            applyGirlTorsoCut(torso, 0.78, 1.12, 0.42);
+            applyGirlTorsoCut(torso, 0.70, 1.02, 0.38);
         }
         if (la) { la.scale.set(1, 1, 1); if (la.position) la.position.x = -0.56; }
         if (ra) { ra.scale.set(1, 1, 1); if (ra.position) ra.position.x = 0.56; }
@@ -3745,8 +3745,8 @@ function azoraGirlCutTorsoGeometry(w, h, d) {
     w = w || 0.78; h = h || 1.12; d = d || 0.42;
     if (typeof THREE === "undefined") return new THREE.BoxGeometry(w, h, d);
     var hx = w / 2, hy = h / 2;
-    var cut = w * 0.30;
-    var band = h * 0.18;
+    var cut = w * 0.34;
+    var band = h * 0.34;
     var shape = new THREE.Shape();
     shape.moveTo(-hx, hy);
     shape.lineTo(hx, hy);
@@ -4150,7 +4150,7 @@ function buildBlockyAvatarMeshes(gender, colors) {
     torsoMesh = makeBox(0.78, 1.12, 0.42, torsoC);
     torsoMesh.name = "torso";
     torsoMesh.position.y = 0.42;
-    if (gender === "girl") applyGirlTorsoCut(torsoMesh, 0.78, 1.12, 0.42);
+    if (gender === "girl") applyGirlTorsoCut(torsoMesh, 0.70, 1.02, 0.38);
     avatarCharacterGroup.add(torsoMesh);
 
     // Short neck — mostly hidden under the head, a sliver still shows
@@ -17304,11 +17304,13 @@ function makeNormAvatar(colors) {
     var legX = 0.18;
     var armThick = 0.30;
     var legThick = 0.30;
-    var torsoW = 0.78;
+    var torsoW = isGirl ? 0.70 : 0.78;
+    var torsoDepth = isGirl ? 0.38 : 0.42;
+    if (isGirl) torsoH = 1.02;
 
-    // Torso — girl uses same cube with two inward triangle cuts
-    var torso = box(torsoW, torsoH, 0.42, colors.torso);
-    if (isGirl) applyGirlTorsoCut(torso, torsoW, torsoH, 0.42);
+    // Torso — girl cube is slightly smaller, with taller inward triangle cuts
+    var torso = box(torsoW, torsoH, torsoDepth, colors.torso);
+    if (isGirl) applyGirlTorsoCut(torso, torsoW, torsoH, torsoDepth);
     torso.position.y = legH + torsoH / 2;
     torso.name = "torso";
     g.add(torso);
