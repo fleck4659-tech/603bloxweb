@@ -3696,8 +3696,8 @@ function azoraRoundedBoxGeometry(w, h, d, radius) {
     d = Math.max(0.04, Number(d) || 0.3);
 
     // Keep radius modest so the middle of every face stays a flat plane
-    var maxR = Math.min(w, h, d) * 0.18;
-    var r = Math.min(Math.max(0.01, radius != null ? radius : Math.min(w, h, d) * 0.1), maxR);
+    var maxR = Math.min(w, h, d) * 0.32;
+    var r = Math.min(Math.max(0.01, radius != null ? radius : Math.min(w, h, d) * 0.22), maxR);
 
     try {
         var seg = 4; // enough samples for smooth edge arcs
@@ -3759,7 +3759,14 @@ function azoraGirlCutTorsoGeometry(w, h, d) {
     shape.lineTo(-hx + cut, 0);
     shape.lineTo(-hx, band);
     shape.closePath();
-    var geo = new THREE.ExtrudeGeometry(shape, { depth: d, bevelEnabled: false, steps: 1 });
+    var geo = new THREE.ExtrudeGeometry(shape, {
+        depth: d,
+        bevelEnabled: true,
+        bevelThickness: Math.min(w, h, d) * 0.06,
+        bevelSize: Math.min(w, h, d) * 0.06,
+        bevelSegments: 3,
+        steps: 1
+    });
     geo.translate(0, 0, -d / 2);
     geo.computeVertexNormals();
     return geo;
@@ -3777,14 +3784,14 @@ function applyBoyTorsoBox(mesh, w, h, d) {
     if (!mesh || typeof THREE === "undefined") return;
     w = w || 0.78; h = h || 1.12; d = d || 0.42;
     try { if (mesh.geometry) mesh.geometry.dispose(); } catch (e) {}
-    var radius = Math.min(w, h, d) * 0.08;
+    var radius = Math.min(w, h, d) * 0.22;
     mesh.geometry = (typeof azoraRoundedBoxGeometry === "function")
         ? azoraRoundedBoxGeometry(w, h, d, radius)
         : new THREE.BoxGeometry(w, h, d);
 }
 
 function makeBox(w, h, d, color) {
-    var radius = Math.min(w, h, d) * 0.1;
+    var radius = Math.min(w, h, d) * 0.22;
     return new THREE.Mesh(
         azoraRoundedBoxGeometry(w, h, d, radius),
         azoraGlossMaterial(color)
@@ -3911,7 +3918,7 @@ function makeAvatarHair(hairColor, headY, headSize, styleId) {
     var mat = (typeof azoraGlossMaterial === 'function') ? azoraGlossMaterial(hairColor) : ((typeof azoraGlossMaterial==="function")?azoraGlossMaterial(hairColor ):new THREE.MeshLambertMaterial({color:hairColor }));
 
     function addPart(name, x, y, z, w, h, d) {
-        var radius = Math.min(w, h, d) * 0.08;
+        var radius = Math.min(w, h, d) * 0.22;
         var geo = (typeof azoraRoundedBoxGeometry === "function")
             ? azoraRoundedBoxGeometry(w, h, d, radius)
             : new THREE.BoxGeometry(w, h, d);
@@ -17298,7 +17305,7 @@ function makeNormAvatar(colors) {
     g.name = "normAvatar";
 
     function box(w, h, d, color) {
-        var radius = Math.min(w, h, d) * 0.08;
+        var radius = Math.min(w, h, d) * 0.22;
         var geo = (typeof azoraRoundedBoxGeometry === "function")
             ? azoraRoundedBoxGeometry(w, h, d, radius)
             : new THREE.BoxGeometry(w, h, d);
@@ -17413,7 +17420,7 @@ function makeNormCatAvatar(colors) {
     g.userData.isCat = true;
 
     function box(w, h, d, color) {
-        var radius = Math.min(w, h, d) * 0.08;
+        var radius = Math.min(w, h, d) * 0.22;
         var geo = (typeof azoraRoundedBoxGeometry === "function")
             ? azoraRoundedBoxGeometry(w, h, d, radius)
             : new THREE.BoxGeometry(w, h, d);
@@ -27811,7 +27818,7 @@ function _profile3dMat(color) {
 }
 
 function _profile3dBox(w, h, d, color) {
-    var radius = Math.min(w, h, d) * 0.08;
+    var radius = Math.min(w, h, d) * 0.22;
     var geo = (typeof azoraRoundedBoxGeometry === "function")
         ? azoraRoundedBoxGeometry(w, h, d, radius)
         : new THREE.BoxGeometry(w, h, d);
